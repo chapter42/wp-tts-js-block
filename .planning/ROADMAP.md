@@ -68,7 +68,7 @@ Plans:
 **Plans:** 3 plans
 
 Plans:
-- [ ] 03-01-PLAN.md — Localized error messages in render.php + error/mute-hint CSS states
+- [x] 03-01-PLAN.md — Localized error messages in render.php + error/mute-hint CSS states
 - [ ] 03-02-PLAN.md — Capability detection, cross-browser voice loading, error state machine in view.js
 - [ ] 03-03-PLAN.md — Auto-retry on failure, iOS visibility change recovery, one-time mute hint
 

@@ -41,16 +41,16 @@
 
 ### Error Handling
 
-- [ ] **ERR-01**: Player shows friendly message when browser doesn't support Web Speech API
-- [ ] **ERR-02**: Player shows message when no voice is available for the detected language
-- [ ] **ERR-03**: Player hides gracefully rather than showing broken UI on unsupported browsers
+- [x] **ERR-01**: Player shows friendly message when browser doesn't support Web Speech API
+- [x] **ERR-02**: Player shows message when no voice is available for the detected language
+- [x] **ERR-03**: Player hides gracefully rather than showing broken UI on unsupported browsers
 
 ### Cross-Browser
 
-- [ ] **XBRW-01**: Works on Chrome desktop and Android
-- [ ] **XBRW-02**: Works on Safari desktop and iOS Safari
-- [ ] **XBRW-03**: Works on Firefox desktop
-- [ ] **XBRW-04**: Works on Edge desktop
+- [x] **XBRW-01**: Works on Chrome desktop and Android
+- [x] **XBRW-02**: Works on Safari desktop and iOS Safari
+- [x] **XBRW-03**: Works on Firefox desktop
+- [x] **XBRW-04**: Works on Edge desktop
 - [ ] **XBRW-05**: Respects mobile user gesture requirement (speak() in click handler)
 
 ## v2 Requirements
@@ -108,13 +108,13 @@
 | WP-02 | Phase 1 | Complete |
 | WP-03 | Phase 1 | Complete |
 | WP-04 | Phase 1 | Complete |
-| ERR-01 | Phase 3 | Pending |
-| ERR-02 | Phase 3 | Pending |
-| ERR-03 | Phase 3 | Pending |
-| XBRW-01 | Phase 3 | Pending |
-| XBRW-02 | Phase 3 | Pending |
-| XBRW-03 | Phase 3 | Pending |
-| XBRW-04 | Phase 3 | Pending |
+| ERR-01 | Phase 3 | Complete |
+| ERR-02 | Phase 3 | Complete |
+| ERR-03 | Phase 3 | Complete |
+| XBRW-01 | Phase 3 | Complete |
+| XBRW-02 | Phase 3 | Complete |
+| XBRW-03 | Phase 3 | Complete |
+| XBRW-04 | Phase 3 | Complete |
 | XBRW-05 | Phase 3 | Pending |
 
 **Coverage:**
