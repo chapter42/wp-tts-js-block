@@ -12,14 +12,13 @@ Bezoekers van chapter42.com kunnen artikelen beluisteren via een native browser 
 
 ### Validated
 
-(None yet — ship to validate)
+- [x] Browser Web Speech API gebruiken voor text-to-speech (geen externe API) — Validated in Phase 1: Block + Core Speech
+- [x] Leest headings en body tekst van het artikel voor — Validated in Phase 1: Block + Core Speech
+- [x] WordPress Gutenberg block voor eenvoudige plaatsing — Validated in Phase 1: Block + Core Speech
 
 ### Active
 
-- [ ] Browser Web Speech API gebruiken voor text-to-speech (geen externe API)
 - [ ] Clean, minimale player UI: play/pause knop, geschatte tijdsduur, snelheidsknop
-- [ ] Leest headings en body tekst van het artikel voor
-- [ ] WordPress Gutenberg block voor eenvoudige plaatsing
 - [ ] Mobile responsive — werkt op mobiel en desktop
 - [ ] Automatische taalselectie (primair Nederlands)
 - [ ] Automatische stemselectie (beste beschikbare stem per browser)
@@ -55,8 +54,11 @@ Bezoekers van chapter42.com kunnen artikelen beluisteren via een native browser 
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Web Speech API i.p.v. externe API | Gratis, geen API keys, privacy-friendly, geen server nodig | — Pending |
-| WordPress Gutenberg block | Redactionele controle over plaatsing, past in WordPress workflow | — Pending |
+| Web Speech API i.p.v. externe API | Gratis, geen API keys, privacy-friendly, geen server nodig | Validated Phase 1 |
+| WordPress Gutenberg block | Redactionele controle over plaatsing, past in WordPress workflow | Validated Phase 1 |
+| Dynamic block (render.php) | save() returns null, avoids block validation errors, consistent HTML | Validated Phase 1 |
+| parse_blocks() text extraction | Block-aware filtering, automatic exclusion of nav/footer/sidebars | Validated Phase 1 |
+| CSS state machine (data-tts-state) | JS sets attribute, CSS drives all visual changes — clean separation | Validated Phase 1 |
 | Minimale UI (Google Blog stijl) | Clean en niet-opdringerig, met optionele snelheidsknop | — Pending |
 | Automatische stemkeuze | Minder UI complexiteit, betere UX voor bezoekers | — Pending |
 
@@ -78,4 +80,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-27 after initialization*
+*Last updated: 2026-03-27 after Phase 1 completion*
