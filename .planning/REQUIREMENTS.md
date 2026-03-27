@@ -36,7 +36,7 @@
 
 - [x] **WP-01**: Plugin registers as a Gutenberg block that editors can place in posts/pages
 - [x] **WP-02**: Block uses dynamic rendering (render.php, not static save())
-- [ ] **WP-03**: Block sidebar (InspectorControls) allows setting language and default speed
+- [x] **WP-03**: Block sidebar (InspectorControls) allows setting language and default speed
 - [x] **WP-04**: Player script loads only on pages where the block is used (no global script loading)
 
 ### Error Handling
@@ -106,7 +106,7 @@
 | CONT-03 | Phase 1 | Complete |
 | WP-01 | Phase 1 | Complete |
 | WP-02 | Phase 1 | Complete |
-| WP-03 | Phase 1 | Pending |
+| WP-03 | Phase 1 | Complete |
 | WP-04 | Phase 1 | Complete |
 | ERR-01 | Phase 3 | Pending |
 | ERR-02 | Phase 3 | Pending |
