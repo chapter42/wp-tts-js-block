@@ -28,7 +28,13 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. Pressing play reads the article's headings and body text aloud using the browser's built-in speech
   4. Player script only loads on pages where the block is present (not site-wide)
   5. Non-content elements (nav, footer, sidebars) are not read aloud
-**Plans**: TBD
+**Plans:** 3 plans
+
+Plans:
+- [ ] 01-01-PLAN.md — Scaffold WordPress plugin, configure block.json, implement render.php text extraction
+- [ ] 01-02-PLAN.md — Editor preview with InspectorControls, Chapter42 brand CSS, state-driven styling
+- [ ] 01-03-PLAN.md — Frontend player state machine with speechSynthesis integration
+
 **UI hint**: yes
 
 ### Phase 2: Reliable Speech + Full Player
@@ -62,6 +68,6 @@ Phases execute in numeric order: 1 -> 2 -> 3
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Block + Core Speech | 0/? | Not started | - |
+| 1. Block + Core Speech | 0/3 | Planned | - |
 | 2. Reliable Speech + Full Player | 0/? | Not started | - |
 | 3. Cross-Browser + Error Handling | 0/? | Not started | - |
