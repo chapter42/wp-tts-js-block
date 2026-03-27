@@ -34,10 +34,9 @@ Declared values (must be multiples of 4):
 | Token | Value | Usage |
 |-------|-------|-------|
 | xs | 4px | Progress bar height, gap between label and duration |
-| sm | 8px | Gap between speed button text and edges |
-| md | 12px | Gap between play button, info section, and controls |
+| sm | 8px | Gap between play button, info section, and controls |
 | lg | 16px | Vertical padding inside player container |
-| xl | 20px | Horizontal padding inside player container |
+| xl | 24px | Horizontal padding inside player container |
 
 Exceptions:
 - Play button: 48x48px (touch target, carried from Phase 1)
@@ -55,9 +54,9 @@ Exceptions:
 |------|------|--------|-------------|------|
 | Label | 16px | 700 | 1.4 | Poppins |
 | Duration / remaining | 14px | 400 | 1.4 | Poppins |
-| Speed button | 13px | 600 | 1 | Poppins |
+| Speed button | 13px | 700 | 1 | Poppins |
 
-**Rationale:** Phase 2 adds one new text element: the speed multiplier label (e.g. "1x", "1.2x"). At 13px semibold it is compact enough to fit in the button without crowding, distinct from the 14px duration text. Line-height 1 because the speed label is single-line inside a button with vertical centering.
+**Rationale:** Phase 2 adds one new text element: the speed multiplier label (e.g. "1x", "1.2x"). At 13px bold it is compact enough to fit in the button without crowding, distinct from the 14px duration text. Using the same 700 weight as the label keeps the two-weight system clean (400 regular + 700 bold). Line-height 1 because the speed label is single-line inside a button with vertical centering.
 
 **Source:** Phase 1 UI-SPEC typography (label/duration unchanged), Phase 2 CONTEXT.md D-09 (speed button shows multiplier text only).
 
@@ -98,7 +97,7 @@ Accent reserved for: play button background (idle/playing/paused states), progre
               + progress bar         beige track  bg
 ```
 
-**Container:** Same as Phase 1 — `display: flex; align-items: center; gap: 12px; width: 100%; padding: 16px 20px; background: var(--tts-light); border: 1px solid rgba(0, 45, 73, 0.1); font-family: var(--tts-font); border-radius: 0;`
+**Container:** Same as Phase 1 — `display: flex; align-items: center; gap: 8px; width: 100%; padding: 16px 24px; background: var(--tts-light); border: 1px solid rgba(0, 45, 73, 0.1); font-family: var(--tts-font); border-radius: 0;`
 
 **Info section changes:** The `.tts-info` flex column now contains three rows:
 1. Label text ("Luister naar artikel") — 16px bold
@@ -124,8 +123,8 @@ Accent reserved for: play button background (idle/playing/paused states), progre
 ```
 
 Changes at mobile breakpoint:
-- Container padding reduces: `padding: 12px 16px`
-- Gap reduces: `gap: 8px`
+- Container padding reduces: `padding: 8px 16px`
+- Gap stays: `gap: 8px`
 - Speed button moves inside the info section, inline with the duration row (right-aligned via `display: flex; justify-content: space-between` on the duration row)
 - This prevents the player from becoming too wide or wrapping awkwardly
 
@@ -173,7 +172,7 @@ Changes at mobile breakpoint:
 | Background | `transparent` |
 | Border | `1px solid var(--tts-dark)` |
 | Border-radius | 0 (sharp corners, matching all other elements) |
-| Font | 13px Poppins, weight 600 |
+| Font | 13px Poppins, weight 700 |
 | Text color | `var(--tts-dark)` |
 | Hover background | `rgba(0, 45, 73, 0.08)` |
 | Active/pressed | `background: rgba(0, 45, 73, 0.15)` |
