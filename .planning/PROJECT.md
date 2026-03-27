@@ -20,10 +20,13 @@ Bezoekers van chapter42.com kunnen artikelen beluisteren via een native browser 
 
 - [ ] Clean, minimale player UI: play/pause knop, geschatte tijdsduur, snelheidsknop
 - [ ] Mobile responsive — werkt op mobiel en desktop
-- [ ] Automatische taalselectie (primair Nederlands)
-- [ ] Automatische stemselectie (beste beschikbare stem per browser)
 - [ ] Snelheidsregeling (bijv. 1x, 1.25x, 1.5x, 2x)
-- [ ] Cross-browser compatibiliteit (Chrome, Safari, Firefox, Edge)
+
+### Validated (Phase 3)
+
+- [x] Cross-browser compatibiliteit (Chrome, Safari, Firefox, Edge) — Validated in Phase 3: Cross-Browser + Error Handling
+- [x] Automatische taalselectie (primair Nederlands) — Validated in Phase 3: Cross-Browser + Error Handling
+- [x] Automatische stemselectie (beste beschikbare stem per browser) — Validated in Phase 3: Cross-Browser + Error Handling
 
 ### Out of Scope
 
@@ -60,7 +63,10 @@ Bezoekers van chapter42.com kunnen artikelen beluisteren via een native browser 
 | parse_blocks() text extraction | Block-aware filtering, automatic exclusion of nav/footer/sidebars | Validated Phase 1 |
 | CSS state machine (data-tts-state) | JS sets attribute, CSS drives all visual changes — clean separation | Validated Phase 1 |
 | Minimale UI (Google Blog stijl) | Clean en niet-opdringerig, met optionele snelheidsknop | — Pending |
-| Automatische stemkeuze | Minder UI complexiteit, betere UX voor bezoekers | — Pending |
+| Automatische stemkeuze | Minder UI complexiteit, betere UX voor bezoekers | Validated Phase 3 |
+| Cross-browser voice loading | onvoiceschanged + polling fallback for Safari | Validated Phase 3 |
+| Inline error messages (D-05) | Errors replace controls inline, no modal/toast | Validated Phase 3 |
+| Auto-retry once on failure (D-03) | Invisible retry before showing error | Validated Phase 3 |
 
 ## Evolution
 
@@ -80,4 +86,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-27 after Phase 1 completion*
+*Last updated: 2026-03-27 after Phase 3 completion*
