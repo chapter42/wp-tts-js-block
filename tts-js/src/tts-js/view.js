@@ -8,6 +8,11 @@
  * onend chaining provides seamless playback (SPCH-03), voice resolution
  * finds the best Dutch voice (SPCH-05), and speed cycling gives users
  * fine-grained control (SPCH-07, PLAY-06).
+ *
+ * Phase 3: Capability detection on first play click (D-12), cross-browser
+ * voice loading (Chrome async, Safari polling, Firefox sync), ERROR state
+ * with inline localized error messages (D-01, D-02, D-05), and enhanced
+ * onerror handling for all SpeechSynthesisErrorEvent codes.
  */
 
 // =============================================================================
@@ -289,6 +294,13 @@ class TTSPlayer {
 		// Loading timeout reference
 		this.loadingTimeout = null;
 
+		// Error messages from render.php (Phase 3 -- D-04, D-06)
+		this.errorMessages = JSON.parse( container.dataset.ttsErrors || '{}' );
+
+		// Capability detection state (Phase 3 -- D-12)
+		this.selectedVoice = null;
+		this.capabilitiesChecked = false;
+
 		// Speed state: find index of initial speed in SPEED_STEPS
 		this.speedIndex = SPEED_STEPS.indexOf( this.speed );
 		if ( this.speedIndex === -1 ) {
@@ -326,12 +338,142 @@ class TTSPlayer {
 	}
 
 	/**
-	 * Toggle play/pause based on current state.
+	 * Show an inline error message, replacing controls (D-05).
+	 * Creates a .tts-error element with role="status" inside .tts-info.
+	 *
+	 * @param {string} message - Localized error message to display
 	 */
-	togglePlay() {
+	showError( message ) {
+		this.setState( STATES.ERROR );
+		let errorEl = this.container.querySelector( '.tts-error' );
+		if ( ! errorEl ) {
+			errorEl = document.createElement( 'div' );
+			errorEl.className = 'tts-error';
+			errorEl.setAttribute( 'role', 'status' );
+			this.container.querySelector( '.tts-info' ).appendChild( errorEl );
+		}
+		errorEl.textContent = message;
+	}
+
+	/**
+	 * Clear inline error message text.
+	 */
+	hideError() {
+		const errorEl = this.container.querySelector( '.tts-error' );
+		if ( errorEl ) {
+			errorEl.textContent = '';
+		}
+	}
+
+	/**
+	 * Load voices cross-browser (Phase 3 -- RESEARCH Pattern 2).
+	 * Chrome/Edge: voices load async via onvoiceschanged.
+	 * Safari: onvoiceschanged may not fire; uses polling fallback.
+	 * Firefox: voices available synchronously.
+	 *
+	 * IMPORTANT: Uses onvoiceschanged property assignment (NOT addEventListener)
+	 * because Safari does not support addEventListener on speechSynthesis.
+	 *
+	 * @return {Promise<SpeechSynthesisVoice[]>} Array of available voices
+	 */
+	loadVoices() {
+		return new Promise( ( resolve ) => {
+			let voices = speechSynthesis.getVoices();
+			if ( voices.length > 0 ) {
+				resolve( voices );
+				return;
+			}
+
+			// Chrome/Edge: voices load async via onvoiceschanged
+			// Safari: onvoiceschanged may not fire; use polling fallback
+			speechSynthesis.onvoiceschanged = () => {
+				voices = speechSynthesis.getVoices();
+				if ( voices.length > 0 ) {
+					resolve( voices );
+				}
+			};
+
+			// Polling fallback for Safari and edge cases (250ms intervals, 2s max)
+			let elapsed = 0;
+			const maxWait = 2000;
+			const interval = 250;
+			const poll = () => {
+				voices = speechSynthesis.getVoices();
+				if ( voices.length > 0 ) {
+					resolve( voices );
+					return;
+				}
+				elapsed += interval;
+				if ( elapsed >= maxWait ) {
+					resolve( [] ); // No voices found within timeout
+					return;
+				}
+				setTimeout( poll, interval );
+			};
+			setTimeout( poll, interval );
+		} );
+	}
+
+	/**
+	 * Check browser capabilities on first play click (D-12).
+	 * - D-10: Feature detection only, no UA sniffing
+	 * - D-11: No silent test utterance
+	 * - D-01: Hide player completely when no speechSynthesis API
+	 * - D-02: Show inline error when no voice for language
+	 * - D-09: Best available voice (exact match first, then prefix)
+	 *
+	 * @return {Promise<boolean>} true if capable, false otherwise
+	 */
+	async checkCapabilities() {
+		// D-10: Feature detection only, no UA sniffing
+		if ( ! ( 'speechSynthesis' in window ) ) {
+			// D-01: Hide player completely (no DOM, not just display:none)
+			this.container.style.display = 'none';
+			return false;
+		}
+
+		// D-11: No silent test utterance -- check API + voices only
+		const voices = await this.loadVoices();
+		const langPrefix = this.lang.substring( 0, 2 ); // 'nl' from 'nl-NL'
+
+		// D-09: Best available voice -- exact match first, then prefix match
+		const exactMatch = voices.find( ( v ) => v.lang === this.lang );
+		const prefixMatch = voices.find( ( v ) =>
+			v.lang.startsWith( langPrefix )
+		);
+
+		if ( exactMatch ) {
+			this.selectedVoice = exactMatch;
+		} else if ( prefixMatch ) {
+			this.selectedVoice = prefixMatch;
+		} else {
+			// D-02: No voice for this language -- show inline error
+			this.showError(
+				this.errorMessages[ 'no-voice' ] ||
+					'No voice available for this language.'
+			);
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Toggle play/pause based on current state.
+	 * Gates first play on checkCapabilities() (D-12).
+	 */
+	async togglePlay() {
 		switch ( this.state ) {
 			case STATES.IDLE:
 			case STATES.FINISHED:
+				// D-12: Check capabilities on first play click
+				if ( ! this.capabilitiesChecked ) {
+					this.capabilitiesChecked = true;
+					const capable = await this.checkCapabilities();
+					if ( ! capable ) {
+						return;
+					}
+				}
 				this.startPlayback();
 				break;
 			case STATES.PLAYING:
@@ -341,8 +483,10 @@ class TTSPlayer {
 				this.resume();
 				break;
 			case STATES.LOADING:
+				// Ignore clicks while loading
+				break;
 			case STATES.ERROR:
-				// Ignore clicks while loading or in error state
+				// Ignore clicks in error state
 				break;
 		}
 	}
@@ -359,9 +503,6 @@ class TTSPlayer {
 
 		this.setState( STATES.LOADING );
 
-		// Clear any pending speech (per RESEARCH Pattern 3)
-		speechSynthesis.cancel();
-
 		// Split text into chunks if not already done
 		if ( ! this.chunks.length ) {
 			this.chunks = splitIntoChunks( this.text );
@@ -371,23 +512,28 @@ class TTSPlayer {
 		this.currentChunkIndex = 0;
 
 		// Resolve voice on first play (cached per D-14)
+		// Phase 3: Use selectedVoice from checkCapabilities() if available,
+		// fall back to resolveVoice() for backward compatibility
 		if ( this.resolvedVoice === null ) {
-			const voice = await resolveVoice( this.lang );
-			if ( voice === null ) {
-				// No suitable voice found (D-12)
-				const labelEl =
-					this.container.querySelector( '.tts-label' );
-				if ( labelEl ) {
-					labelEl.textContent =
-						'Geen geschikte stem gevonden';
+			if ( this.selectedVoice ) {
+				this.resolvedVoice = this.selectedVoice;
+			} else {
+				const voice = await resolveVoice( this.lang );
+				if ( voice === null ) {
+					// No suitable voice found -- show localized error (D-02)
+					this.showError(
+						this.errorMessages[ 'no-voice' ] ||
+							'No voice available for this language.'
+					);
+					return;
 				}
-				this.durationEl.textContent =
-					'Probeer een andere browser';
-				this.setState( STATES.ERROR );
-				return;
+				this.resolvedVoice = voice;
 			}
-			this.resolvedVoice = voice;
 		}
+
+		// Cancel AFTER voice resolution — canceling before the async gap
+		// causes Chrome to silently drop subsequent speak() calls
+		speechSynthesis.cancel();
 
 		// Start chunk playback
 		this.playNextChunk();
@@ -425,7 +571,11 @@ class TTSPlayer {
 		const utterance = new SpeechSynthesisUtterance( chunk );
 		utterance.lang = this.lang;
 		utterance.rate = this.speed; // Reads current speed (D-10)
-		utterance.voice = this.resolvedVoice; // Cached voice (D-14)
+		if ( this.selectedVoice ) {
+			utterance.voice = this.selectedVoice;
+		} else if ( this.resolvedVoice ) {
+			utterance.voice = this.resolvedVoice; // Cached voice (D-14)
+		}
 
 		// Transition to playing when speech actually starts
 		utterance.onstart = () => {
@@ -446,11 +596,39 @@ class TTSPlayer {
 			this.playNextChunk();
 		};
 
-		// Handle errors (ignore 'canceled' from manual cancel)
+		// Handle errors per SpeechSynthesisErrorEvent error codes (Phase 3)
 		utterance.onerror = ( event ) => {
-			if ( event.error !== 'canceled' ) {
-				this.stop();
+			// 'canceled' and 'interrupted' fire after manual cancel() -- not real errors
+			if (
+				event.error === 'canceled' ||
+				event.error === 'interrupted'
+			) {
+				return;
 			}
+			// language-unavailable / voice-unavailable -> show no-voice error (D-02)
+			if (
+				event.error === 'language-unavailable' ||
+				event.error === 'voice-unavailable'
+			) {
+				this.showError(
+					this.errorMessages[ 'no-voice' ] ||
+						'No voice available for this language.'
+				);
+				return;
+			}
+			// synthesis-unavailable / not-allowed -> show no-support error (D-01 variant)
+			if (
+				event.error === 'synthesis-unavailable' ||
+				event.error === 'not-allowed'
+			) {
+				this.showError(
+					this.errorMessages[ 'no-support' ] ||
+						'Text-to-speech is not available in this browser.'
+				);
+				return;
+			}
+			// All other errors: reset to idle (Plan 03 will add auto-retry here)
+			this.setState( STATES.IDLE );
 		};
 
 		// Keep reference to prevent garbage collection (RESEARCH Pitfall 3)
