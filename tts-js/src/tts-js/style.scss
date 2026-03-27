@@ -234,8 +234,7 @@
 }
 
 .wp-block-tts-js-player[data-tts-state="error"] .tts-play-btn {
-	pointer-events: none;
-	opacity: 0.5;
+	display: none;
 }
 
 .wp-block-tts-js-player[data-tts-state="error"] .tts-stop-btn {
@@ -259,6 +258,28 @@
 	to {
 		transform: rotate(360deg);
 	}
+}
+
+/* Error message element (per D-05 -- hidden by default, shown in error state) */
+.tts-error {
+	display: none;
+	font-size: 14px;
+	font-weight: 400;
+	line-height: 1.4;
+	color: var(--tts-dark);
+}
+
+.wp-block-tts-js-player[data-tts-state="error"] .tts-error {
+	display: block;
+}
+
+/* Mute hint (per D-08 -- one-time iOS silent switch hint) */
+.tts-mute-hint {
+	font-size: 13px;
+	font-weight: 400;
+	line-height: 1.4;
+	color: rgba(0, 45, 73, 0.6);
+	padding: 4px 0 0;
 }
 
 /* ---- MOBILE RESPONSIVE (per UI-SPEC and PLAY-08) ---- */
