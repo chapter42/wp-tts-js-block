@@ -1,0 +1,35 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "tts-js/player",
+	"version": "1.0.0",
+	"title": "Listen to Article",
+	"category": "widgets",
+	"icon": "controls-volumeon",
+	"description": "Voeg een tekst-naar-spraak player toe aan je artikel",
+	"attributes": {
+		"lang": {
+			"type": "string",
+			"default": "nl-NL"
+		},
+		"speed": {
+			"type": "number",
+			"default": 1
+		},
+		"label": {
+			"type": "string",
+			"default": "Luister naar artikel"
+		}
+	},
+	"supports": {
+		"html": false,
+		"multiple": false,
+		"align": false
+	},
+	"textdomain": "tts-js",
+	"editorScript": "file:./index.js",
+	"editorStyle": "file:./index.css",
+	"style": "file:./style-index.css",
+	"render": "file:./render.php",
+	"viewScript": "file:./view.js"
+}
