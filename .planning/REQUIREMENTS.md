@@ -86,42 +86,42 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PLAY-01 | — | Pending |
-| PLAY-02 | — | Pending |
-| PLAY-03 | — | Pending |
-| PLAY-04 | — | Pending |
-| PLAY-05 | — | Pending |
-| PLAY-06 | — | Pending |
-| PLAY-07 | — | Pending |
-| PLAY-08 | — | Pending |
-| SPCH-01 | — | Pending |
-| SPCH-02 | — | Pending |
-| SPCH-03 | — | Pending |
-| SPCH-04 | — | Pending |
-| SPCH-05 | — | Pending |
-| SPCH-06 | — | Pending |
-| SPCH-07 | — | Pending |
-| CONT-01 | — | Pending |
-| CONT-02 | — | Pending |
-| CONT-03 | — | Pending |
-| WP-01 | — | Pending |
-| WP-02 | — | Pending |
-| WP-03 | — | Pending |
-| WP-04 | — | Pending |
-| ERR-01 | — | Pending |
-| ERR-02 | — | Pending |
-| ERR-03 | — | Pending |
-| XBRW-01 | — | Pending |
-| XBRW-02 | — | Pending |
-| XBRW-03 | — | Pending |
-| XBRW-04 | — | Pending |
-| XBRW-05 | — | Pending |
+| PLAY-01 | Phase 1 | Pending |
+| PLAY-02 | Phase 1 | Pending |
+| PLAY-03 | Phase 1 | Pending |
+| PLAY-04 | Phase 2 | Pending |
+| PLAY-05 | Phase 2 | Pending |
+| PLAY-06 | Phase 2 | Pending |
+| PLAY-07 | Phase 2 | Pending |
+| PLAY-08 | Phase 2 | Pending |
+| SPCH-01 | Phase 1 | Pending |
+| SPCH-02 | Phase 2 | Pending |
+| SPCH-03 | Phase 2 | Pending |
+| SPCH-04 | Phase 2 | Pending |
+| SPCH-05 | Phase 2 | Pending |
+| SPCH-06 | Phase 2 | Pending |
+| SPCH-07 | Phase 2 | Pending |
+| CONT-01 | Phase 1 | Pending |
+| CONT-02 | Phase 1 | Pending |
+| CONT-03 | Phase 1 | Pending |
+| WP-01 | Phase 1 | Pending |
+| WP-02 | Phase 1 | Pending |
+| WP-03 | Phase 1 | Pending |
+| WP-04 | Phase 1 | Pending |
+| ERR-01 | Phase 3 | Pending |
+| ERR-02 | Phase 3 | Pending |
+| ERR-03 | Phase 3 | Pending |
+| XBRW-01 | Phase 3 | Pending |
+| XBRW-02 | Phase 3 | Pending |
+| XBRW-03 | Phase 3 | Pending |
+| XBRW-04 | Phase 3 | Pending |
+| XBRW-05 | Phase 3 | Pending |
 
 **Coverage:**
 - v1 requirements: 30 total
-- Mapped to phases: 0
-- Unmapped: 30
+- Mapped to phases: 30
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-27*
-*Last updated: 2026-03-27 after initial definition*
+*Last updated: 2026-03-27 after roadmap creation*
