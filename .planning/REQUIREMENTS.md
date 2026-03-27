@@ -10,21 +10,21 @@
 - [x] **PLAY-01**: User can start article playback by pressing a play button
 - [x] **PLAY-02**: User can pause and resume playback
 - [x] **PLAY-03**: User can stop playback and reset to the beginning
-- [ ] **PLAY-04**: Player shows estimated reading duration (e.g. "~3 min") based on word count
-- [ ] **PLAY-05**: Player shows a progress bar indicating position in the article
-- [ ] **PLAY-06**: User can cycle playback speed (1x, 1.25x, 1.5x, 2x)
-- [ ] **PLAY-07**: Player displays current play state visually (playing, paused, stopped)
+- [x] **PLAY-04**: Player shows estimated reading duration (e.g. "~3 min") based on word count
+- [x] **PLAY-05**: Player shows a progress bar indicating position in the article
+- [x] **PLAY-06**: User can cycle playback speed (1x, 1.25x, 1.5x, 2x)
+- [x] **PLAY-07**: Player displays current play state visually (playing, paused, stopped)
 - [ ] **PLAY-08**: Player is mobile responsive (works on phone and desktop screens)
 
 ### Speech Engine
 
 - [x] **SPCH-01**: Text-to-speech uses the browser's Web Speech API (no external API)
-- [ ] **SPCH-02**: Article text is chunked at sentence boundaries to prevent Chrome's 15s cutoff
-- [ ] **SPCH-03**: Chunks are chained via onend callbacks for seamless playback
-- [ ] **SPCH-04**: Language is auto-detected from the page/block setting (default: nl-NL)
-- [ ] **SPCH-05**: Best available voice is auto-selected per browser/OS with smart ranking
-- [ ] **SPCH-06**: Async voice loading is handled (Chrome onvoiceschanged, Safari/Firefox patterns)
-- [ ] **SPCH-07**: Speed changes apply immediately to subsequent chunks
+- [x] **SPCH-02**: Article text is chunked at sentence boundaries to prevent Chrome's 15s cutoff
+- [x] **SPCH-03**: Chunks are chained via onend callbacks for seamless playback
+- [x] **SPCH-04**: Language is auto-detected from the page/block setting (default: nl-NL)
+- [x] **SPCH-05**: Best available voice is auto-selected per browser/OS with smart ranking
+- [x] **SPCH-06**: Async voice loading is handled (Chrome onvoiceschanged, Safari/Firefox patterns)
+- [x] **SPCH-07**: Speed changes apply immediately to subsequent chunks
 
 ### Content Extraction
 
@@ -89,18 +89,18 @@
 | PLAY-01 | Phase 1 | Complete |
 | PLAY-02 | Phase 1 | Complete |
 | PLAY-03 | Phase 1 | Complete |
-| PLAY-04 | Phase 2 | Pending |
-| PLAY-05 | Phase 2 | Pending |
-| PLAY-06 | Phase 2 | Pending |
-| PLAY-07 | Phase 2 | Pending |
+| PLAY-04 | Phase 2 | Complete |
+| PLAY-05 | Phase 2 | Complete |
+| PLAY-06 | Phase 2 | Complete |
+| PLAY-07 | Phase 2 | Complete |
 | PLAY-08 | Phase 2 | Pending |
 | SPCH-01 | Phase 1 | Complete |
-| SPCH-02 | Phase 2 | Pending |
-| SPCH-03 | Phase 2 | Pending |
-| SPCH-04 | Phase 2 | Pending |
-| SPCH-05 | Phase 2 | Pending |
-| SPCH-06 | Phase 2 | Pending |
-| SPCH-07 | Phase 2 | Pending |
+| SPCH-02 | Phase 2 | Complete |
+| SPCH-03 | Phase 2 | Complete |
+| SPCH-04 | Phase 2 | Complete |
+| SPCH-05 | Phase 2 | Complete |
+| SPCH-06 | Phase 2 | Complete |
+| SPCH-07 | Phase 2 | Complete |
 | CONT-01 | Phase 1 | Complete |
 | CONT-02 | Phase 1 | Complete |
 | CONT-03 | Phase 1 | Complete |
