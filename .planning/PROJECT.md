@@ -1,0 +1,81 @@
+# TTS-JS — Browser Text-to-Speech WordPress Plugin
+
+## What This Is
+
+Een WordPress plugin die een clean "Listen to article" player toevoegt als Gutenberg block. Gebruikt de ingebouwde Web Speech API (`speechSynthesis`) van de browser om artikeltekst (headings + body) voor te lezen — geen externe API's of abonnementen nodig. Werkt responsive op desktop en mobiel.
+
+## Core Value
+
+Bezoekers van chapter42.com kunnen artikelen beluisteren via een native browser TTS player, zonder externe services of kosten.
+
+## Requirements
+
+### Validated
+
+(None yet — ship to validate)
+
+### Active
+
+- [ ] Browser Web Speech API gebruiken voor text-to-speech (geen externe API)
+- [ ] Clean, minimale player UI: play/pause knop, geschatte tijdsduur, snelheidsknop
+- [ ] Leest headings en body tekst van het artikel voor
+- [ ] WordPress Gutenberg block voor eenvoudige plaatsing
+- [ ] Mobile responsive — werkt op mobiel en desktop
+- [ ] Automatische taalselectie (primair Nederlands)
+- [ ] Automatische stemselectie (beste beschikbare stem per browser)
+- [ ] Snelheidsregeling (bijv. 1x, 1.25x, 1.5x, 2x)
+- [ ] Cross-browser compatibiliteit (Chrome, Safari, Firefox, Edge)
+
+### Out of Scope
+
+- Externe TTS API's (Google Cloud, Amazon Polly, etc.) — moet gratis en zonder API keys werken
+- Stemkeuze dropdown voor gebruikers — automatisch de beste stem kiezen
+- Audio opname/export naar MP3 — browser TTS is real-time alleen
+- Sticky floating player — player blijft in het WordPress block
+- Trinity Audio / betaalde dienst integratie — hele punt is dit te vermijden
+
+## Context
+
+- Website: chapter42.com, draait op WordPress
+- Content is voornamelijk in het Nederlands
+- Inspiratie: Google Blog "Listen to article" player (clean, minimaal) en Fortune/Trinity Audio player (als referentie voor controls)
+- Web Speech API (`speechSynthesis`) is breed ondersteund: Chrome, Safari, Edge, Firefox
+- Op mobiel (iOS Safari, Android Chrome) zijn er platform-specifieke beperkingen (bijv. user gesture vereist om audio te starten)
+- Nederlandse stemmen variëren sterk per browser/OS — sommige hebben geen goede NL stem
+
+## Constraints
+
+- **Tech**: Puur browser Web Speech API — geen server-side TTS of API keys
+- **Platform**: WordPress plugin met Gutenberg block support
+- **Taal**: Primair Nederlandse content, maar moet andere talen aankunnen
+- **Kosten**: Gratis — geen externe diensten of abonnementen
+- **Compatibiliteit**: Moet werken op Chrome, Safari, Firefox, Edge (desktop + mobiel)
+
+## Key Decisions
+
+| Decision | Rationale | Outcome |
+|----------|-----------|---------|
+| Web Speech API i.p.v. externe API | Gratis, geen API keys, privacy-friendly, geen server nodig | — Pending |
+| WordPress Gutenberg block | Redactionele controle over plaatsing, past in WordPress workflow | — Pending |
+| Minimale UI (Google Blog stijl) | Clean en niet-opdringerig, met optionele snelheidsknop | — Pending |
+| Automatische stemkeuze | Minder UI complexiteit, betere UX voor bezoekers | — Pending |
+
+## Evolution
+
+This document evolves at phase transitions and milestone boundaries.
+
+**After each phase transition** (via `/gsd:transition`):
+1. Requirements invalidated? → Move to Out of Scope with reason
+2. Requirements validated? → Move to Validated with phase reference
+3. New requirements emerged? → Add to Active
+4. Decisions to log? → Add to Key Decisions
+5. "What This Is" still accurate? → Update if drifted
+
+**After each milestone** (via `/gsd:complete-milestone`):
+1. Full review of all sections
+2. Core Value check — still the right priority?
+3. Audit Out of Scope — reasons still valid?
+4. Update Context with current state
+
+---
+*Last updated: 2026-03-27 after initialization*
