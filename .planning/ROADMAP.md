@@ -47,7 +47,13 @@ Plans:
   3. User can cycle playback speed (1x/1.25x/1.5x/2x) and the change takes effect on the next sentence
   4. Player shows estimated duration, a progress bar, and visual play state (playing/paused/stopped)
   5. Player looks and works correctly on both phone-sized and desktop screens
-**Plans**: TBD
+**Plans:** 3 plans
+
+Plans:
+- [ ] 02-01-PLAN.md — Player UI markup, CSS states, progress bar, speed button, mobile responsive, editor preview
+- [ ] 02-02-PLAN.md — Chunked speech engine with voice resolver, speed cycling, progress tracking in view.js
+- [ ] 02-03-PLAN.md — Build verification and human acceptance testing
+
 **UI hint**: yes
 
 ### Phase 3: Cross-Browser + Error Handling
@@ -74,5 +80,5 @@ Phases execute in numeric order: 1 -> 2 -> 3
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Block + Core Speech | 3/3 | Complete | 2026-03-27 |
-| 2. Reliable Speech + Full Player | 0/? | Not started | - |
+| 2. Reliable Speech + Full Player | 0/3 | In Progress | - |
 | 3. Cross-Browser + Error Handling | 0/3 | Planned | - |
