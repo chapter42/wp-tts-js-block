@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 01-01-PLAN.md
-last_updated: "2026-03-27T15:22:11.252Z"
+stopped_at: Completed 01-03-PLAN.md
+last_updated: "2026-03-27T15:26:52.785Z"
 last_activity: 2026-03-27
 progress:
   total_phases: 3
   completed_phases: 0
   total_plans: 3
-  completed_plans: 1
+  completed_plans: 2
   percent: 0
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-03-27)
 ## Current Position
 
 Phase: 01 (block-core-speech) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-03-27
 
@@ -53,6 +53,7 @@ Progress: [..........] 0%
 
 *Updated after each plan completion*
 | Phase 01 P01 | 8min | 2 tasks | 12 files |
+| Phase 01 P03 | 2min | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -66,6 +67,8 @@ Recent decisions affecting current work:
 - [Research]: Dynamic block with render.php chosen over static save() -- avoids block validation errors
 - [Phase 01]: Used register_block_type() for WP 6.5+ compat instead of wp_register_block_types_from_metadata_collection()
 - [Phase 01]: Adapted to create-block v4.85 nested src/tts-js/ directory structure
+- [Phase 01]: Internal state tracking over speechSynthesis.speaking/paused -- browser implementations unreliable
+- [Phase 01]: Single utterance Phase 1 -- no chunking, accepting Chrome 15s cutoff
 
 ### Pending Todos
 
@@ -78,6 +81,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-27T15:22:11.249Z
-Stopped at: Completed 01-01-PLAN.md
+Last session: 2026-03-27T15:26:52.782Z
+Stopped at: Completed 01-03-PLAN.md
 Resume file: None
