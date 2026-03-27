@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [ ] **Phase 1: Block + Core Speech** - WordPress Gutenberg block with basic play/pause/stop and text extraction
 - [ ] **Phase 2: Reliable Speech + Full Player** - Chunked speech engine, voice selection, speed control, progress, and responsive UI
-- [ ] **Phase 3: Cross-Browser + Error Handling** - Works on all target browsers with graceful degradation
+- [x] **Phase 3: Cross-Browser + Error Handling** - Works on all target browsers with graceful degradation (completed 2026-03-27)
 
 ## Phase Details
 
@@ -65,12 +65,12 @@ Plans:
   2. On mobile, playback starts from a user tap (respects gesture requirement) without silent failures
   3. On a browser with no Web Speech API support, the player shows a friendly message instead of broken UI
   4. When no voice is available for the detected language, the player informs the user instead of failing silently
-**Plans:** 3 plans
+**Plans:** 3/3 plans complete
 
 Plans:
 - [x] 03-01-PLAN.md — Localized error messages in render.php + error/mute-hint CSS states
 - [x] 03-02-PLAN.md — Capability detection, cross-browser voice loading, error state machine in view.js
-- [ ] 03-03-PLAN.md — Auto-retry on failure, iOS visibility change recovery, one-time mute hint
+- [x] 03-03-PLAN.md — Auto-retry on failure, iOS visibility change recovery, one-time mute hint
 
 ## Progress
 
@@ -81,4 +81,4 @@ Phases execute in numeric order: 1 -> 2 -> 3
 |-------|----------------|--------|-----------|
 | 1. Block + Core Speech | 3/3 | Complete | 2026-03-27 |
 | 2. Reliable Speech + Full Player | 0/3 | In Progress | - |
-| 3. Cross-Browser + Error Handling | 0/3 | Planned | - |
+| 3. Cross-Browser + Error Handling | 3/3 | Complete   | 2026-03-27 |

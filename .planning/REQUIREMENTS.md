@@ -51,7 +51,7 @@
 - [x] **XBRW-02**: Works on Safari desktop and iOS Safari
 - [x] **XBRW-03**: Works on Firefox desktop
 - [x] **XBRW-04**: Works on Edge desktop
-- [ ] **XBRW-05**: Respects mobile user gesture requirement (speak() in click handler)
+- [x] **XBRW-05**: Respects mobile user gesture requirement (speak() in click handler)
 
 ## v2 Requirements
 
@@ -115,7 +115,7 @@
 | XBRW-02 | Phase 3 | Complete |
 | XBRW-03 | Phase 3 | Complete |
 | XBRW-04 | Phase 3 | Complete |
-| XBRW-05 | Phase 3 | Pending |
+| XBRW-05 | Phase 3 | Complete |
 
 **Coverage:**
 - v1 requirements: 30 total
