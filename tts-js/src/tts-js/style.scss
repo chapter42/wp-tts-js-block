@@ -1,12 +1,12 @@
 /* CSS Custom Properties (per D1 -- Chapter42 brand) */
 :root {
 	--tts-primary: #FF3349;
-	--tts-dark: #002D49;
-	--tts-light: #F3EDE2;
+	--tts-dark: #00263e;
+	--tts-light: #c5cdc7;
 	--tts-font: 'Poppins', sans-serif;
-	--tts-progress-track: rgba(0, 45, 73, 0.1);
+	--tts-progress-track: rgba(0, 38, 62, 0.15);
 	--tts-progress-fill: var(--tts-primary);
-	--tts-btn-hover: rgba(0, 45, 73, 0.08);
+	--tts-btn-hover: rgba(0, 38, 62, 0.08);
 }
 
 /* Player container (per D3 -- full width, per UI-SPEC spacing) */
@@ -17,9 +17,10 @@
 	width: 100%;
 	padding: 16px 24px;
 	background: var(--tts-light);
-	border: 1px solid rgba(0, 45, 73, 0.1);
+	border: none;
 	font-family: var(--tts-font);
 	box-sizing: border-box;
+	border-radius: 8px;
 }
 
 /* Play button (per UI-SPEC -- 48x48, red bg, white icon, sharp corners) */
@@ -36,11 +37,15 @@
 	justify-content: center;
 	flex-shrink: 0;
 	padding: 0;
-	border-radius: 0;
+	border-radius: 50%;
 }
 
 .tts-play-btn:hover {
 	background: var(--tts-dark);
+}
+
+.tts-play-btn:active {
+	transform: scale(0.95);
 }
 
 /* Info section (per UI-SPEC -- flex:1, stacked label + duration) */
@@ -65,29 +70,13 @@
 	font-size: 14px;
 	font-weight: 400;
 	line-height: 1.4;
-	color: rgba(0, 45, 73, 0.6);
+	color: rgba(0, 38, 62, 0.6);
 }
 
-/* Stop button (per UI-SPEC -- 36x36, transparent bg, navy border, sharp corners) */
-.tts-stop-btn {
-	width: 36px;
-	height: 36px;
-	min-width: 36px;
-	border: 1px solid var(--tts-dark);
-	background: transparent;
-	color: var(--tts-dark);
-	cursor: pointer;
-	display: flex;
-	align-items: center;
-	justify-content: center;
+/* Speed wrapper (relative container for popup menu) */
+.tts-speed-wrap {
+	position: relative;
 	flex-shrink: 0;
-	padding: 0;
-	border-radius: 0;
-}
-
-.tts-stop-btn:hover {
-	background: var(--tts-dark);
-	color: #fff;
 }
 
 /* Progress bar (per UI-SPEC -- 4px thin bar, accent fill) */
@@ -115,8 +104,8 @@
 	height: 36px;
 	padding: 0 8px;
 	background: transparent;
-	border: 1px solid var(--tts-dark);
-	border-radius: 0;
+	border: none;
+	border-radius: 4px;
 	font-family: var(--tts-font);
 	font-size: 13px;
 	font-weight: 700;
@@ -131,7 +120,47 @@
 }
 
 .tts-speed-btn:active {
-	background: rgba(0, 45, 73, 0.15);
+	background: rgba(0, 38, 62, 0.15);
+}
+
+/* Speed popup menu */
+.tts-speed-menu {
+	display: none;
+	position: absolute;
+	bottom: calc(100% + 4px);
+	right: 0;
+	list-style: none;
+	margin: 0;
+	padding: 4px 0;
+	background: #fff;
+	border: 1px solid rgba(0, 38, 62, 0.1);
+	border-radius: 6px;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+	min-width: 56px;
+	z-index: 10;
+}
+
+.tts-speed-menu[aria-hidden="false"] {
+	display: block;
+}
+
+.tts-speed-menu li {
+	padding: 6px 12px;
+	font-family: var(--tts-font);
+	font-size: 13px;
+	font-weight: 700;
+	color: var(--tts-dark);
+	cursor: pointer;
+	text-align: center;
+	line-height: 1.4;
+}
+
+.tts-speed-menu li:hover {
+	background: var(--tts-btn-hover);
+}
+
+.tts-speed-menu__active {
+	color: var(--tts-primary) !important;
 }
 
 /* ---- STATE-DRIVEN VISIBILITY (per UI-SPEC Player States table) ---- */
@@ -148,15 +177,7 @@
 	display: inline-block;
 }
 
-/* Default: stop button hidden (only visible when playing/paused) */
-.tts-stop-btn {
-	display: none;
-}
-
-/* IDLE state (explicit -- same as default) */
-.wp-block-tts-js-player[data-tts-state="idle"] .tts-stop-btn {
-	display: none;
-}
+/* IDLE state -- default */
 
 /* LOADING state: show spinner, hide play icon, hide stop */
 .wp-block-tts-js-player[data-tts-state="loading"] .tts-icon--play {
@@ -177,7 +198,7 @@
 	opacity: 0.5;
 }
 
-/* PLAYING state: show pause icon, hide play, show stop */
+/* PLAYING state: show pause icon, hide play */
 .wp-block-tts-js-player[data-tts-state="playing"] .tts-icon--play {
 	display: none;
 }
@@ -186,19 +207,11 @@
 	display: inline-block;
 }
 
-.wp-block-tts-js-player[data-tts-state="playing"] .tts-stop-btn {
-	display: flex;
-}
-
 .wp-block-tts-js-player[data-tts-state="playing"] .tts-progress {
 	display: block;
 }
 
-/* PAUSED state: show play icon (resume), show stop */
-.wp-block-tts-js-player[data-tts-state="paused"] .tts-stop-btn {
-	display: flex;
-}
-
+/* PAUSED state: show play icon (resume) */
 .wp-block-tts-js-player[data-tts-state="paused"] .tts-progress {
 	display: block;
 }
@@ -237,11 +250,7 @@
 	display: none;
 }
 
-.wp-block-tts-js-player[data-tts-state="error"] .tts-stop-btn {
-	display: none;
-}
-
-.wp-block-tts-js-player[data-tts-state="error"] .tts-speed-btn {
+.wp-block-tts-js-player[data-tts-state="error"] .tts-speed-wrap {
 	display: none;
 }
 
@@ -278,7 +287,7 @@
 	font-size: 13px;
 	font-weight: 400;
 	line-height: 1.4;
-	color: rgba(0, 45, 73, 0.6);
+	color: rgba(0, 38, 62, 0.6);
 	padding: 4px 0 0;
 }
 

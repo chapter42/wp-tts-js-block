@@ -315,16 +315,29 @@ class TTSPlayer {
 
 		// DOM references
 		this.playBtn = container.querySelector( '.tts-play-btn' );
-		this.stopBtn = container.querySelector( '.tts-stop-btn' );
 		this.speedBtn = container.querySelector( '.tts-speed-btn' );
+		this.speedMenu = container.querySelector( '.tts-speed-menu' );
 		this.durationEl = container.querySelector( '.tts-duration' );
 		this.progressBar = container.querySelector( '.tts-progress' );
 		this.progressFill = container.querySelector( '.tts-progress__fill' );
 
 		// Event listeners
 		this.playBtn.addEventListener( 'click', () => this.togglePlay() );
-		this.stopBtn.addEventListener( 'click', () => this.stop() );
-		this.speedBtn.addEventListener( 'click', () => this.cycleSpeed() );
+		this.speedBtn.addEventListener( 'click', ( e ) => {
+			e.stopPropagation();
+			this.toggleSpeedMenu();
+		} );
+		if ( this.speedMenu ) {
+			this.speedMenu.addEventListener( 'click', ( e ) => {
+				const li = e.target.closest( 'li[data-speed]' );
+				if ( li ) {
+					this.setSpeed( parseFloat( li.dataset.speed ) );
+					this.closeSpeedMenu();
+				}
+			} );
+		}
+		// Close speed menu when clicking outside
+		document.addEventListener( 'click', () => this.closeSpeedMenu() );
 
 		// iOS tab background recovery (D-07)
 		document.addEventListener( 'visibilitychange', () => this.handleVisibilityChange() );
@@ -442,18 +455,13 @@ class TTSPlayer {
 
 		// D-11: No silent test utterance -- check API + voices only
 		const voices = await this.loadVoices();
-		const langPrefix = this.lang.substring( 0, 2 ); // 'nl' from 'nl-NL'
 
-		// D-09: Best available voice -- exact match first, then prefix match
-		const exactMatch = voices.find( ( v ) => v.lang === this.lang );
-		const prefixMatch = voices.find( ( v ) =>
-			v.lang.startsWith( langPrefix )
-		);
+		// D-09: Best available voice using quality scoring (pickBestVoice)
+		// Prefers enhanced/premium/neural voices over compact ones
+		const bestVoice = pickBestVoice( voices, this.lang );
 
-		if ( exactMatch ) {
-			this.selectedVoice = exactMatch;
-		} else if ( prefixMatch ) {
-			this.selectedVoice = prefixMatch;
+		if ( bestVoice ) {
+			this.selectedVoice = bestVoice;
 		} else {
 			// D-02: No voice for this language -- show inline error
 			this.showError(
@@ -474,6 +482,14 @@ class TTSPlayer {
 		switch ( this.state ) {
 			case STATES.IDLE:
 			case STATES.FINISHED:
+				// Claim user gesture for speechSynthesis BEFORE any async work.
+				// Chrome requires speak() in the direct click call stack.
+				// A silent utterance unlocks the audio context.
+				{
+					const unlock = new SpeechSynthesisUtterance( '' );
+					speechSynthesis.speak( unlock );
+					speechSynthesis.cancel();
+				}
 				// D-12: Check capabilities on first play click
 				if ( ! this.capabilitiesChecked ) {
 					this.capabilitiesChecked = true;
@@ -482,9 +498,6 @@ class TTSPlayer {
 						return;
 					}
 				}
-				// XBRW-05: speak() is called within user gesture context.
-				// Async checkCapabilities() runs as microtask continuation of click,
-				// which browsers accept as user gesture context.
 				this.startPlayback();
 				break;
 			case STATES.PLAYING:
@@ -542,8 +555,7 @@ class TTSPlayer {
 			}
 		}
 
-		// Cancel AFTER voice resolution — canceling before the async gap
-		// causes Chrome to silently drop subsequent speak() calls
+		// Clear any pending speech before starting fresh
 		speechSynthesis.cancel();
 
 		// Start chunk playback
@@ -664,19 +676,33 @@ class TTSPlayer {
 	}
 
 	/**
-	 * Pause playback at chunk boundary (Android-safe).
-	 * Does NOT call speechSynthesis.pause() -- lets current sentence finish naturally.
+	 * Pause playback. Uses speechSynthesis.pause() on desktop for instant
+	 * response. Falls back to chunk-boundary pause on touch devices (Android
+	 * treats pause() as cancel).
 	 */
 	pause() {
-		this.isPausePending = true;
+		if ( 'ontouchstart' in window ) {
+			// Mobile: chunk-boundary pause (Android-safe)
+			this.isPausePending = true;
+		} else {
+			// Desktop: instant pause
+			speechSynthesis.pause();
+		}
+		this.setState( STATES.PAUSED );
 	}
 
 	/**
-	 * Resume playback from the paused chunk position.
+	 * Resume playback from the paused position.
 	 */
 	resume() {
 		this.setState( STATES.PLAYING );
-		this.playNextChunk();
+		if ( speechSynthesis.paused ) {
+			// Desktop: was paused via speechSynthesis.pause()
+			speechSynthesis.resume();
+		} else {
+			// Mobile: was paused at chunk boundary
+			this.playNextChunk();
+		}
 	}
 
 	/**
@@ -818,18 +844,58 @@ class TTSPlayer {
 	}
 
 	/**
-	 * Cycle through speed steps (D-07/D-09/D-10).
-	 * Wraps from 1.5x back to 0.8x.
+	 * Toggle the speed selection popup menu.
 	 */
-	cycleSpeed() {
-		this.speedIndex =
-			( this.speedIndex + 1 ) % SPEED_STEPS.length;
-		this.speed = SPEED_STEPS[ this.speedIndex ];
+	toggleSpeedMenu() {
+		if ( ! this.speedMenu ) return;
+		const isOpen = this.speedMenu.getAttribute( 'aria-hidden' ) === 'false';
+		if ( isOpen ) {
+			this.closeSpeedMenu();
+		} else {
+			this.speedMenu.setAttribute( 'aria-hidden', 'false' );
+			this.speedBtn.setAttribute( 'aria-expanded', 'true' );
+		}
+	}
+
+	/**
+	 * Close the speed selection popup menu.
+	 */
+	closeSpeedMenu() {
+		if ( ! this.speedMenu ) return;
+		this.speedMenu.setAttribute( 'aria-hidden', 'true' );
+		this.speedBtn.setAttribute( 'aria-expanded', 'false' );
+	}
+
+	/**
+	 * Set playback speed directly. If currently playing, restarts the
+	 * current chunk immediately at the new speed.
+	 */
+	setSpeed( newSpeed ) {
+		this.speed = newSpeed;
+		this.speedIndex = SPEED_STEPS.indexOf( newSpeed );
+		if ( this.speedIndex === -1 ) this.speedIndex = DEFAULT_SPEED_INDEX;
+
 		this.speedBtn.textContent = formatSpeed( this.speed );
 		this.speedBtn.setAttribute(
 			'aria-label',
 			'Afspeelsnelheid: ' + formatSpeed( this.speed )
 		);
+
+		// Update active state in menu
+		if ( this.speedMenu ) {
+			this.speedMenu.querySelectorAll( 'li' ).forEach( ( li ) => {
+				const isActive = parseFloat( li.dataset.speed ) === newSpeed;
+				li.classList.toggle( 'tts-speed-menu__active', isActive );
+				li.setAttribute( 'aria-selected', isActive ? 'true' : 'false' );
+			} );
+		}
+
+		// Instant speed switch: if playing, restart current chunk at new rate
+		if ( this.state === STATES.PLAYING && this.currentUtterance ) {
+			speechSynthesis.cancel();
+			setTimeout( () => this.playNextChunk(), 50 );
+		}
+
 		this.updateDuration();
 	}
 

@@ -120,8 +120,12 @@ $icon_error   = '<svg class="tts-icon tts-icon--error" width="20" height="20" vi
 			<div class="tts-progress__fill"></div>
 		</div>
 	</div>
-	<button class="tts-speed-btn" aria-label="Afspeelsnelheid: 1x">1x</button>
-	<button class="tts-stop-btn" aria-label="Stop">
-		<?php echo $icon_stop; ?>
-	</button>
+	<div class="tts-speed-wrap">
+		<button class="tts-speed-btn" aria-label="Afspeelsnelheid: 1x" aria-expanded="false">1x</button>
+		<ul class="tts-speed-menu" role="listbox" aria-label="Kies afspeelsnelheid" aria-hidden="true">
+			<?php foreach ( [ 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5 ] as $s ) : ?>
+				<li role="option" data-speed="<?php echo $s; ?>"<?php echo $s == 1.0 ? ' aria-selected="true" class="tts-speed-menu__active"' : ''; ?>><?php echo $s == (int) $s ? (int) $s . 'x' : $s . 'x'; ?></li>
+			<?php endforeach; ?>
+		</ul>
+	</div>
 </div>
