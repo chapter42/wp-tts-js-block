@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: planning
-stopped_at: Phase 3 context gathered
-last_updated: "2026-03-27T14:39:08.359Z"
-last_activity: 2026-03-27 -- Roadmap created
+status: executing
+stopped_at: Completed 01-01-PLAN.md
+last_updated: "2026-03-27T15:22:11.252Z"
+last_activity: 2026-03-27
 progress:
   total_phases: 3
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
+  total_plans: 3
+  completed_plans: 1
   percent: 0
 ---
 
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-27)
 
 **Core value:** Bezoekers van chapter42.com kunnen artikelen beluisteren via een native browser TTS player, zonder externe services of kosten.
-**Current focus:** Phase 1 - Block + Core Speech
+**Current focus:** Phase 01 — block-core-speech
 
 ## Current Position
 
-Phase: 1 of 3 (Block + Core Speech)
-Plan: 0 of ? in current phase
-Status: Ready to plan
-Last activity: 2026-03-27 -- Roadmap created
+Phase: 01 (block-core-speech) — EXECUTING
+Plan: 2 of 3
+Status: Ready to execute
+Last activity: 2026-03-27
 
 Progress: [..........] 0%
 
@@ -52,6 +52,7 @@ Progress: [..........] 0%
 - Trend: -
 
 *Updated after each plan completion*
+| Phase 01 P01 | 8min | 2 tasks | 12 files |
 
 ## Accumulated Context
 
@@ -63,6 +64,8 @@ Recent decisions affecting current work:
 - [Roadmap]: 3-phase coarse structure chosen -- Foundation, then reliability + polish, then cross-browser hardening
 - [Research]: Chrome 15s speech cutoff requires sentence-level chunking from Phase 2 onward
 - [Research]: Dynamic block with render.php chosen over static save() -- avoids block validation errors
+- [Phase 01]: Used register_block_type() for WP 6.5+ compat instead of wp_register_block_types_from_metadata_collection()
+- [Phase 01]: Adapted to create-block v4.85 nested src/tts-js/ directory structure
 
 ### Pending Todos
 
@@ -75,6 +78,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-27T14:39:08.356Z
-Stopped at: Phase 3 context gathered
-Resume file: .planning/phases/03-cross-browser-error-handling/03-CONTEXT.md
+Last session: 2026-03-27T15:22:11.249Z
+Stopped at: Completed 01-01-PLAN.md
+Resume file: None

@@ -28,16 +28,16 @@
 
 ### Content Extraction
 
-- [ ] **CONT-01**: Plugin extracts headings (h1-h6) and body text (paragraphs) from the article
-- [ ] **CONT-02**: Non-content elements (nav, footer, ads, sidebars) are excluded
-- [ ] **CONT-03**: Extracted text is passed to the speech engine in reading order
+- [x] **CONT-01**: Plugin extracts headings (h1-h6) and body text (paragraphs) from the article
+- [x] **CONT-02**: Non-content elements (nav, footer, ads, sidebars) are excluded
+- [x] **CONT-03**: Extracted text is passed to the speech engine in reading order
 
 ### WordPress Integration
 
-- [ ] **WP-01**: Plugin registers as a Gutenberg block that editors can place in posts/pages
-- [ ] **WP-02**: Block uses dynamic rendering (render.php, not static save())
+- [x] **WP-01**: Plugin registers as a Gutenberg block that editors can place in posts/pages
+- [x] **WP-02**: Block uses dynamic rendering (render.php, not static save())
 - [ ] **WP-03**: Block sidebar (InspectorControls) allows setting language and default speed
-- [ ] **WP-04**: Player script loads only on pages where the block is used (no global script loading)
+- [x] **WP-04**: Player script loads only on pages where the block is used (no global script loading)
 
 ### Error Handling
 
@@ -101,13 +101,13 @@
 | SPCH-05 | Phase 2 | Pending |
 | SPCH-06 | Phase 2 | Pending |
 | SPCH-07 | Phase 2 | Pending |
-| CONT-01 | Phase 1 | Pending |
-| CONT-02 | Phase 1 | Pending |
-| CONT-03 | Phase 1 | Pending |
-| WP-01 | Phase 1 | Pending |
-| WP-02 | Phase 1 | Pending |
+| CONT-01 | Phase 1 | Complete |
+| CONT-02 | Phase 1 | Complete |
+| CONT-03 | Phase 1 | Complete |
+| WP-01 | Phase 1 | Complete |
+| WP-02 | Phase 1 | Complete |
 | WP-03 | Phase 1 | Pending |
-| WP-04 | Phase 1 | Pending |
+| WP-04 | Phase 1 | Complete |
 | ERR-01 | Phase 3 | Pending |
 | ERR-02 | Phase 3 | Pending |
 | ERR-03 | Phase 3 | Pending |
