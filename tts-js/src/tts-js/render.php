@@ -68,12 +68,31 @@ $lang  = esc_attr( $attributes['lang'] ?? 'nl-NL' );
 $speed = esc_attr( $attributes['speed'] ?? 1 );
 $label = esc_html( $attributes['label'] ?? 'Luister naar artikel' );
 
+// Localized error messages (per D-04, D-06 -- keyed by lang, fallback to en-US)
+$error_messages = [
+	'nl-NL' => [
+		'no-support' => 'Voorlezen is niet beschikbaar in deze browser.',
+		'no-voice'   => 'Geen stem beschikbaar voor Nederlands.',
+		'failed'     => 'Voorlezen is helaas mislukt. Probeer het opnieuw.',
+		'mute-hint'  => 'Geen geluid? Controleer of je telefoon niet op stil staat.',
+	],
+	'en-US' => [
+		'no-support' => 'Text-to-speech is not available in this browser.',
+		'no-voice'   => 'No voice available for this language.',
+		'failed'     => 'Playback failed. Please try again.',
+		'mute-hint'  => 'No sound? Check if your phone is not on silent mode.',
+	],
+];
+
+$msgs = $error_messages[ $lang ] ?? $error_messages['en-US'];
+
 $wrapper_attributes = get_block_wrapper_attributes( [
-	'class'          => 'tts-player',
-	'data-tts-text'  => $full_text,
-	'data-tts-lang'  => $lang,
-	'data-tts-speed' => $speed,
-	'data-tts-words' => $word_count,
+	'class'           => 'tts-player',
+	'data-tts-text'   => $full_text,
+	'data-tts-lang'   => $lang,
+	'data-tts-speed'  => $speed,
+	'data-tts-words'  => $word_count,
+	'data-tts-errors' => wp_json_encode( $msgs ),
 ] );
 
 // SVG icons (20x20 viewBox, currentColor fill -- per UI-SPEC)
