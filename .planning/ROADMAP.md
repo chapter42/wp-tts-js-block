@@ -33,7 +33,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 Plans:
 - [x] 01-01-PLAN.md — Scaffold WordPress plugin, configure block.json, implement render.php text extraction
 - [x] 01-02-PLAN.md — Editor preview with InspectorControls, Chapter42 brand CSS, state-driven styling
-- [ ] 01-03-PLAN.md — Frontend player state machine with speechSynthesis integration
+- [x] 01-03-PLAN.md — Frontend player state machine with speechSynthesis integration
 
 **UI hint**: yes
 

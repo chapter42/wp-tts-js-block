@@ -7,9 +7,9 @@
 
 ### Player UI
 
-- [ ] **PLAY-01**: User can start article playback by pressing a play button
-- [ ] **PLAY-02**: User can pause and resume playback
-- [ ] **PLAY-03**: User can stop playback and reset to the beginning
+- [x] **PLAY-01**: User can start article playback by pressing a play button
+- [x] **PLAY-02**: User can pause and resume playback
+- [x] **PLAY-03**: User can stop playback and reset to the beginning
 - [ ] **PLAY-04**: Player shows estimated reading duration (e.g. "~3 min") based on word count
 - [ ] **PLAY-05**: Player shows a progress bar indicating position in the article
 - [ ] **PLAY-06**: User can cycle playback speed (1x, 1.25x, 1.5x, 2x)
@@ -18,7 +18,7 @@
 
 ### Speech Engine
 
-- [ ] **SPCH-01**: Text-to-speech uses the browser's Web Speech API (no external API)
+- [x] **SPCH-01**: Text-to-speech uses the browser's Web Speech API (no external API)
 - [ ] **SPCH-02**: Article text is chunked at sentence boundaries to prevent Chrome's 15s cutoff
 - [ ] **SPCH-03**: Chunks are chained via onend callbacks for seamless playback
 - [ ] **SPCH-04**: Language is auto-detected from the page/block setting (default: nl-NL)
@@ -86,15 +86,15 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PLAY-01 | Phase 1 | Pending |
-| PLAY-02 | Phase 1 | Pending |
-| PLAY-03 | Phase 1 | Pending |
+| PLAY-01 | Phase 1 | Complete |
+| PLAY-02 | Phase 1 | Complete |
+| PLAY-03 | Phase 1 | Complete |
 | PLAY-04 | Phase 2 | Pending |
 | PLAY-05 | Phase 2 | Pending |
 | PLAY-06 | Phase 2 | Pending |
 | PLAY-07 | Phase 2 | Pending |
 | PLAY-08 | Phase 2 | Pending |
-| SPCH-01 | Phase 1 | Pending |
+| SPCH-01 | Phase 1 | Complete |
 | SPCH-02 | Phase 2 | Pending |
 | SPCH-03 | Phase 2 | Pending |
 | SPCH-04 | Phase 2 | Pending |
