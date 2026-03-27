@@ -1,5 +1,5 @@
 import { useBlockProps, InspectorControls } from '@wordpress/block-editor';
-import { PanelBody, SelectControl, RangeControl, TextControl } from '@wordpress/components';
+import { PanelBody, SelectControl, TextControl } from '@wordpress/components';
 import './editor.scss';
 
 export default function Edit({ attributes, setAttributes }) {
@@ -34,13 +34,20 @@ export default function Edit({ attributes, setAttributes }) {
 						]}
 						onChange={(val) => setAttributes({ lang: val })}
 					/>
-					<RangeControl
-						label="Snelheid"
+					<SelectControl
+						label="Standaard snelheid"
 						value={speed}
-						onChange={(val) => setAttributes({ speed: val })}
-						min={0.5}
-						max={2}
-						step={0.25}
+						options={[
+							{ label: '0.8x', value: 0.8 },
+							{ label: '0.9x', value: 0.9 },
+							{ label: '1x', value: 1 },
+							{ label: '1.1x', value: 1.1 },
+							{ label: '1.2x', value: 1.2 },
+							{ label: '1.3x', value: 1.3 },
+							{ label: '1.4x', value: 1.4 },
+							{ label: '1.5x', value: 1.5 },
+						]}
+						onChange={(val) => setAttributes({ speed: parseFloat(val) })}
 					/>
 					<TextControl
 						label="Label"
@@ -56,7 +63,11 @@ export default function Edit({ attributes, setAttributes }) {
 				<div className="tts-info">
 					<span className="tts-label">{label}</span>
 					<span className="tts-duration">~3 min</span>
+					<div className="tts-progress tts-progress--preview" style={{ display: 'block' }}>
+						<div className="tts-progress__fill" style={{ width: '40%' }}></div>
+					</div>
 				</div>
+				<button className="tts-speed-btn" disabled aria-label="Afspeelsnelheid: 1x">1x</button>
 				<button className="tts-stop-btn" disabled aria-label="Stop">
 					{iconStop}
 				</button>
