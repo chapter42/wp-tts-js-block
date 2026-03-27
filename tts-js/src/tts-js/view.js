@@ -301,6 +301,11 @@ class TTSPlayer {
 		this.selectedVoice = null;
 		this.capabilitiesChecked = false;
 
+		// Resilience state (Phase 3 Plan 03 -- D-03, D-07, D-08)
+		this.hasRetried = false;
+		this.lastChunkIndex = 0;
+		this.wasPlayingBeforeHidden = false;
+
 		// Speed state: find index of initial speed in SPEED_STEPS
 		this.speedIndex = SPEED_STEPS.indexOf( this.speed );
 		if ( this.speedIndex === -1 ) {
@@ -320,6 +325,9 @@ class TTSPlayer {
 		this.playBtn.addEventListener( 'click', () => this.togglePlay() );
 		this.stopBtn.addEventListener( 'click', () => this.stop() );
 		this.speedBtn.addEventListener( 'click', () => this.cycleSpeed() );
+
+		// iOS tab background recovery (D-07)
+		document.addEventListener( 'visibilitychange', () => this.handleVisibilityChange() );
 
 		// Set initial state and duration display
 		this.setState( STATES.IDLE );
@@ -474,6 +482,9 @@ class TTSPlayer {
 						return;
 					}
 				}
+				// XBRW-05: speak() is called within user gesture context.
+				// Async checkCapabilities() runs as microtask continuation of click,
+				// which browsers accept as user gesture context.
 				this.startPlayback();
 				break;
 			case STATES.PLAYING:
@@ -586,6 +597,8 @@ class TTSPlayer {
 				clearTimeout( this.loadingTimeout );
 				this.loadingTimeout = null;
 			}
+			// Reset retry flag on successful start -- allows future retries
+			this.hasRetried = false;
 		};
 
 		// Chain to next chunk on completion (D-03)
@@ -627,13 +640,27 @@ class TTSPlayer {
 				);
 				return;
 			}
-			// All other errors: reset to idle (Plan 03 will add auto-retry here)
-			this.setState( STATES.IDLE );
+			// All other errors (audio-busy, audio-hardware, network, synthesis-failed): D-03 auto-retry
+			if ( ! this.hasRetried ) {
+				this.hasRetried = true;
+				this.retryPlayback( this.lastChunkIndex );
+			} else {
+				// Retry already failed -- show error and reset after 5s
+				this.showError( this.errorMessages.failed || 'Playback failed. Please try again.' );
+				setTimeout( () => {
+					this.hideError();
+					this.setState( STATES.IDLE );
+					this.hasRetried = false;
+				}, 5000 );
+			}
 		};
 
 		// Keep reference to prevent garbage collection (RESEARCH Pitfall 3)
 		this.currentUtterance = utterance;
 		speechSynthesis.speak( utterance );
+
+		// D-08: One-time mute hint on first play for touch devices
+		this.showMuteHintIfNeeded();
 	}
 
 	/**
@@ -664,6 +691,7 @@ class TTSPlayer {
 		this.currentUtterance = null;
 		this.currentChunkIndex = 0;
 		this.isPausePending = false;
+		this.hasRetried = false;
 
 		// Reset progress bar
 		if ( this.progressFill ) {
@@ -677,6 +705,83 @@ class TTSPlayer {
 		this.updateDuration();
 
 		this.setState( STATES.IDLE );
+	}
+
+	/**
+	 * Retry playback after a failure (D-03).
+	 * Cancels current speech and restarts from the given chunk index.
+	 * Phase 2 chunking is already in place, so retry resumes from lastChunkIndex.
+	 *
+	 * @param {number} fromChunkIndex - Chunk index to resume from
+	 */
+	retryPlayback( fromChunkIndex ) {
+		speechSynthesis.cancel();
+		this.currentUtterance = null;
+		this.currentChunkIndex = fromChunkIndex;
+		this.setState( STATES.LOADING );
+		this.playNextChunk();
+	}
+
+	/**
+	 * Handle tab visibility changes for iOS background recovery (D-07).
+	 * When tab goes hidden during playback, stores position.
+	 * When tab returns, checks if speech stopped and retries if needed.
+	 */
+	handleVisibilityChange() {
+		if ( document.visibilityState === 'hidden' && this.state === STATES.PLAYING ) {
+			this.lastChunkIndex = this.currentChunkIndex;
+			this.wasPlayingBeforeHidden = true;
+		}
+
+		if ( document.visibilityState === 'visible' && this.wasPlayingBeforeHidden ) {
+			this.wasPlayingBeforeHidden = false;
+			// Check if speech actually stopped (iOS Safari stops speech on background)
+			if ( ! speechSynthesis.speaking ) {
+				// D-03: Use retry mechanism (counts as one retry attempt)
+				if ( ! this.hasRetried ) {
+					this.hasRetried = true;
+					this.retryPlayback( this.lastChunkIndex );
+				} else {
+					// Already retried once -- show error and reset
+					this.showError( this.errorMessages.failed || 'Playback failed. Please try again.' );
+					setTimeout( () => {
+						this.hideError();
+						this.setState( STATES.IDLE );
+						this.hasRetried = false;
+					}, 5000 );
+				}
+			}
+		}
+	}
+
+	/**
+	 * Show a one-time mute hint on touch devices (D-08).
+	 * Uses localStorage to ensure the hint only appears once across sessions.
+	 * Auto-dismisses after 6 seconds.
+	 */
+	showMuteHintIfNeeded() {
+		// Only show on touch devices (proxy for mobile -- per D-08)
+		if ( ! ( 'ontouchstart' in window ) ) {
+			return;
+		}
+
+		// One-time: use localStorage so hint doesn't reappear across sessions
+		const hintKey = 'tts-mute-hint-shown';
+		if ( localStorage.getItem( hintKey ) ) {
+			return;
+		}
+
+		const hint = document.createElement( 'div' );
+		hint.className = 'tts-mute-hint';
+		hint.textContent = this.errorMessages[ 'mute-hint' ] || 'No sound? Check if your phone is not on silent mode.';
+		this.container.querySelector( '.tts-info' ).appendChild( hint );
+
+		localStorage.setItem( hintKey, '1' );
+
+		// Auto-dismiss after 6 seconds
+		setTimeout( () => {
+			hint.remove();
+		}, 6000 );
 	}
 
 	/**
