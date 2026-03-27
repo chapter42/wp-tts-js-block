@@ -1,1 +1,15 @@
-// Editor styles implemented in Plan 02
+/* Editor-only: preview mode styling */
+.tts-player--preview {
+
+	.tts-play-btn,
+	.tts-stop-btn {
+		opacity: 0.8;
+		cursor: default;
+		pointer-events: none;
+	}
+
+	/* In editor preview, always show stop button for layout completeness */
+	.tts-stop-btn {
+		display: flex;
+	}
+}
