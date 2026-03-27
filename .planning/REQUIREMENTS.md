@@ -14,7 +14,7 @@
 - [x] **PLAY-05**: Player shows a progress bar indicating position in the article
 - [x] **PLAY-06**: User can cycle playback speed (1x, 1.25x, 1.5x, 2x)
 - [x] **PLAY-07**: Player displays current play state visually (playing, paused, stopped)
-- [ ] **PLAY-08**: Player is mobile responsive (works on phone and desktop screens)
+- [x] **PLAY-08**: Player is mobile responsive (works on phone and desktop screens)
 
 ### Speech Engine
 
@@ -93,7 +93,7 @@
 | PLAY-05 | Phase 2 | Complete |
 | PLAY-06 | Phase 2 | Complete |
 | PLAY-07 | Phase 2 | Complete |
-| PLAY-08 | Phase 2 | Pending |
+| PLAY-08 | Phase 2 | Complete |
 | SPCH-01 | Phase 1 | Complete |
 | SPCH-02 | Phase 2 | Complete |
 | SPCH-03 | Phase 2 | Complete |

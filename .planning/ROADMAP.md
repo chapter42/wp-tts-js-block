@@ -50,7 +50,7 @@ Plans:
 **Plans:** 3 plans
 
 Plans:
-- [ ] 02-01-PLAN.md — Player UI markup, CSS states, progress bar, speed button, mobile responsive, editor preview
+- [x] 02-01-PLAN.md — Player UI markup, CSS states, progress bar, speed button, mobile responsive, editor preview
 - [x] 02-02-PLAN.md — Chunked speech engine with voice resolver, speed cycling, progress tracking in view.js
 - [ ] 02-03-PLAN.md — Build verification and human acceptance testing
 

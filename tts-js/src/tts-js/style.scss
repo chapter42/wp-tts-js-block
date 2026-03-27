@@ -4,15 +4,18 @@
 	--tts-dark: #002D49;
 	--tts-light: #F3EDE2;
 	--tts-font: 'Poppins', sans-serif;
+	--tts-progress-track: rgba(0, 45, 73, 0.1);
+	--tts-progress-fill: var(--tts-primary);
+	--tts-btn-hover: rgba(0, 45, 73, 0.08);
 }
 
 /* Player container (per D3 -- full width, per UI-SPEC spacing) */
 .wp-block-tts-js-player {
 	display: flex;
 	align-items: center;
-	gap: 12px;
+	gap: 8px;
 	width: 100%;
-	padding: 16px 20px;
+	padding: 16px 24px;
 	background: var(--tts-light);
 	border: 1px solid rgba(0, 45, 73, 0.1);
 	font-family: var(--tts-font);
@@ -87,12 +90,57 @@
 	color: #fff;
 }
 
+/* Progress bar (per UI-SPEC -- 4px thin bar, accent fill) */
+.tts-progress {
+	width: 100%;
+	height: 4px;
+	background: var(--tts-progress-track);
+	border-radius: 2px;
+	margin-top: 4px;
+	overflow: hidden;
+	display: none; /* Hidden by default (idle state) */
+}
+
+.tts-progress__fill {
+	height: 100%;
+	width: 0%;
+	background: var(--tts-progress-fill);
+	border-radius: 2px;
+	transition: width 0.3s ease;
+}
+
+/* Speed button (per UI-SPEC -- 40x36, transparent bg, navy border, compact text) */
+.tts-speed-btn {
+	min-width: 40px;
+	height: 36px;
+	padding: 0 8px;
+	background: transparent;
+	border: 1px solid var(--tts-dark);
+	border-radius: 0;
+	font-family: var(--tts-font);
+	font-size: 13px;
+	font-weight: 700;
+	line-height: 1;
+	color: var(--tts-dark);
+	cursor: pointer;
+	flex-shrink: 0;
+}
+
+.tts-speed-btn:hover {
+	background: var(--tts-btn-hover);
+}
+
+.tts-speed-btn:active {
+	background: rgba(0, 45, 73, 0.15);
+}
+
 /* ---- STATE-DRIVEN VISIBILITY (per UI-SPEC Player States table) ---- */
 
 /* Default: show play icon, hide all others */
 .tts-icon--pause,
 .tts-icon--check,
-.tts-icon--spinner {
+.tts-icon--spinner,
+.tts-icon--error {
 	display: none;
 }
 
@@ -120,6 +168,15 @@
 	animation: tts-spin 1s linear infinite;
 }
 
+.wp-block-tts-js-player[data-tts-state="loading"] .tts-progress {
+	display: block;
+}
+
+.wp-block-tts-js-player[data-tts-state="loading"] .tts-speed-btn {
+	pointer-events: none;
+	opacity: 0.5;
+}
+
 /* PLAYING state: show pause icon, hide play, show stop */
 .wp-block-tts-js-player[data-tts-state="playing"] .tts-icon--play {
 	display: none;
@@ -133,9 +190,17 @@
 	display: flex;
 }
 
+.wp-block-tts-js-player[data-tts-state="playing"] .tts-progress {
+	display: block;
+}
+
 /* PAUSED state: show play icon (resume), show stop */
 .wp-block-tts-js-player[data-tts-state="paused"] .tts-stop-btn {
 	display: flex;
+}
+
+.wp-block-tts-js-player[data-tts-state="paused"] .tts-progress {
+	display: block;
 }
 
 /* FINISHED state: show checkmark, hide play, hide stop */
@@ -147,6 +212,44 @@
 	display: inline-block;
 }
 
+.wp-block-tts-js-player[data-tts-state="finished"] .tts-progress {
+	display: block;
+}
+
+.wp-block-tts-js-player[data-tts-state="finished"] .tts-progress__fill {
+	width: 100%;
+}
+
+/* ERROR state: muted, show error icon, hide controls */
+.wp-block-tts-js-player[data-tts-state="error"] {
+	opacity: 0.7;
+}
+
+.wp-block-tts-js-player[data-tts-state="error"] .tts-icon--play {
+	display: none;
+}
+
+.wp-block-tts-js-player[data-tts-state="error"] .tts-icon--error {
+	display: inline-block;
+}
+
+.wp-block-tts-js-player[data-tts-state="error"] .tts-play-btn {
+	pointer-events: none;
+	opacity: 0.5;
+}
+
+.wp-block-tts-js-player[data-tts-state="error"] .tts-stop-btn {
+	display: none;
+}
+
+.wp-block-tts-js-player[data-tts-state="error"] .tts-speed-btn {
+	display: none;
+}
+
+.wp-block-tts-js-player[data-tts-state="error"] .tts-progress {
+	display: none;
+}
+
 /* Spinner animation */
 @keyframes tts-spin {
 	from {
@@ -155,5 +258,31 @@
 
 	to {
 		transform: rotate(360deg);
+	}
+}
+
+/* ---- MOBILE RESPONSIVE (per UI-SPEC and PLAY-08) ---- */
+
+/* Mobile: 480px breakpoint */
+@media (max-width: 480px) {
+	.wp-block-tts-js-player {
+		padding: 8px 16px;
+	}
+
+	.tts-speed-btn {
+		min-width: 36px;
+		height: 32px;
+		font-size: 12px;
+	}
+}
+
+/* Very small screens: 360px breakpoint */
+@media (max-width: 360px) {
+	.tts-label {
+		font-size: 15px;
+	}
+
+	.tts-duration {
+		font-size: 13px;
 	}
 }
