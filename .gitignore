@@ -1,0 +1,30 @@
+# OS files
+.DS_Store
+Thumbs.db
+
+# Screenshots and bookmarks (planning artifacts)
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webloc
+
+# Claude Code workspace
+.claude/
+
+# Distribution builds (regenerated via npm run build)
+dist/
+
+# Planning directory (internal workflow)
+.planning/
+
+# Node modules (inside tts-js/)
+tts-js/node_modules/
+tts-js/.npm
+tts-js/.eslintcache
+tts-js/*.tgz
+tts-js/*.zip
+
+# Environment
+.env
+.env.*
