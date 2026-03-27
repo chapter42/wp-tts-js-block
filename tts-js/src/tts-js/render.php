@@ -73,6 +73,7 @@ $wrapper_attributes = get_block_wrapper_attributes( [
 	'data-tts-text'  => $full_text,
 	'data-tts-lang'  => $lang,
 	'data-tts-speed' => $speed,
+	'data-tts-words' => $word_count,
 ] );
 
 // SVG icons (20x20 viewBox, currentColor fill -- per UI-SPEC)
@@ -81,6 +82,7 @@ $icon_pause   = '<svg class="tts-icon tts-icon--pause" width="20" height="20" vi
 $icon_check   = '<svg class="tts-icon tts-icon--check" width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="4,10 8,15 16,5"/></svg>';
 $icon_spinner = '<svg class="tts-icon tts-icon--spinner" width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M10 2a8 8 0 0 1 8 8" stroke-linecap="round"/></svg>';
 $icon_stop    = '<svg class="tts-icon tts-icon--stop" width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><rect x="4" y="4" width="12" height="12"/></svg>';
+$icon_error   = '<svg class="tts-icon tts-icon--error" width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="10" cy="10" r="8"/><line x1="10" y1="6" x2="10" y2="11"/><circle cx="10" cy="14" r="0.5" fill="currentColor"/></svg>';
 ?>
 <div <?php echo $wrapper_attributes; ?>>
 	<button class="tts-play-btn" aria-label="<?php echo esc_attr( $attributes['label'] ?? 'Luister naar artikel' ); ?>">
@@ -88,11 +90,18 @@ $icon_stop    = '<svg class="tts-icon tts-icon--stop" width="20" height="20" vie
 		<?php echo $icon_pause; ?>
 		<?php echo $icon_check; ?>
 		<?php echo $icon_spinner; ?>
+		<?php echo $icon_error; ?>
 	</button>
 	<div class="tts-info">
 		<span class="tts-label"><?php echo $label; ?></span>
-		<span class="tts-duration">~<?php echo $reading_minutes; ?> min</span>
+		<span class="tts-duration" aria-live="polite">~<?php echo $reading_minutes; ?> min</span>
+		<div class="tts-progress" role="progressbar"
+		     aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"
+		     aria-label="Voortgang">
+			<div class="tts-progress__fill"></div>
+		</div>
 	</div>
+	<button class="tts-speed-btn" aria-label="Afspeelsnelheid: 1x">1x</button>
 	<button class="tts-stop-btn" aria-label="Stop">
 		<?php echo $icon_stop; ?>
 	</button>
