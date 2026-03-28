@@ -91,8 +91,8 @@ Plans:
 
 Plans:
 - [x] 04-01-PLAN.md — Extract pure functions to utils.js, write Jest unit tests for all 5 functions
-- [ ] 04-02-PLAN.md — WordPress lint standards, husky pre-commit hooks, debug logging via ?tts-debug=1
-- [ ] 04-03-PLAN.md — Manual UAT checklist for 9 browser/device combinations
+- [x] 04-02-PLAN.md — WordPress lint standards, husky pre-commit hooks, debug logging via ?tts-debug=1
+- [x] 04-03-PLAN.md — Manual UAT checklist for 9 browser/device combinations
 
 ### Phase 5: Accessibility & Keyboard Controls
 **Goal**: Player is fully keyboard-navigable, screen reader friendly, and respects motion preferences
