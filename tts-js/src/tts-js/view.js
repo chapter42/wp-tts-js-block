@@ -1,3 +1,5 @@
+/* global speechSynthesis, SpeechSynthesisUtterance, localStorage */
+
 /**
  * TTS-JS Frontend Player
  *
@@ -20,17 +22,36 @@ import {
 	SPEED_STEPS,
 	DEFAULT_SPEED_INDEX,
 	WORDS_PER_MINUTE,
-	MAX_CHUNK_LENGTH,
 	VOICE_TIMEOUT_MS,
 	VOICE_POLL_INTERVAL_MS,
-	DUTCH_ABBREVIATIONS,
-	QUALITY_KEYWORDS,
 	splitIntoChunks,
 	pickBestVoice,
 	estimateDuration,
 	formatDuration,
 	formatSpeed,
 } from './utils';
+
+// =============================================================================
+// Section 0: Debug logging (activated by ?tts-debug=1)
+// =============================================================================
+
+const TTS_DEBUG = new URLSearchParams( window.location.search ).has(
+	'tts-debug'
+);
+
+function debugLog( ...args ) {
+	if ( TTS_DEBUG ) {
+		// eslint-disable-next-line no-console
+		console.log( '[TTS-JS]', ...args );
+	}
+}
+
+function debugWarn( ...args ) {
+	if ( TTS_DEBUG ) {
+		// eslint-disable-next-line no-console
+		console.warn( '[TTS-JS]', ...args );
+	}
+}
 
 // =============================================================================
 // Section 1: resolveVoice (per D-13, RESEARCH Pattern 3)
@@ -44,7 +65,7 @@ import {
  * Timeout after VOICE_TIMEOUT_MS (3000ms).
  *
  * @param {string} langCode - Target language code (e.g. 'nl-NL')
- * @return {Promise<SpeechSynthesisVoice|null>} Best voice or null if none found
+ * @return {Promise<Object|null>} Best voice or null if none found
  */
 function resolveVoice( langCode ) {
 	return new Promise( ( resolve ) => {
@@ -70,9 +91,7 @@ function resolveVoice( langCode ) {
 
 		// Strategy 2: Async event (Chrome)
 		speechSynthesis.onvoiceschanged = () => {
-			done(
-				pickBestVoice( speechSynthesis.getVoices(), langCode )
-			);
+			done( pickBestVoice( speechSynthesis.getVoices(), langCode ) );
 		};
 
 		// Strategy 3: Polling fallback (older Safari) -- D-13
@@ -165,7 +184,9 @@ class TTSPlayer {
 		document.addEventListener( 'click', () => this.closeSpeedMenu() );
 
 		// iOS tab background recovery (D-07)
-		document.addEventListener( 'visibilitychange', () => this.handleVisibilityChange() );
+		document.addEventListener( 'visibilitychange', () =>
+			this.handleVisibilityChange()
+		);
 
 		// Set initial state and duration display
 		this.setState( STATES.IDLE );
@@ -179,6 +200,7 @@ class TTSPlayer {
 	 * @param {string} newState - One of STATES values
 	 */
 	setState( newState ) {
+		debugLog( 'state:', this.state, '->', newState );
 		this.state = newState;
 		this.container.dataset.ttsState = newState;
 	}
@@ -220,7 +242,7 @@ class TTSPlayer {
 	 * IMPORTANT: Uses onvoiceschanged property assignment (NOT addEventListener)
 	 * because Safari does not support addEventListener on speechSynthesis.
 	 *
-	 * @return {Promise<SpeechSynthesisVoice[]>} Array of available voices
+	 * @return {Promise<Object[]>} Array of available voices
 	 */
 	loadVoices() {
 		return new Promise( ( resolve ) => {
@@ -283,7 +305,9 @@ class TTSPlayer {
 
 		// D-09: Best available voice using quality scoring (pickBestVoice)
 		// Prefers enhanced/premium/neural voices over compact ones
+		debugLog( 'voices found:', voices.length );
 		const bestVoice = pickBestVoice( voices, this.lang );
+		debugLog( 'selected voice:', bestVoice?.name, bestVoice?.lang );
 
 		if ( bestVoice ) {
 			this.selectedVoice = bestVoice;
@@ -355,6 +379,15 @@ class TTSPlayer {
 		// Split text into chunks if not already done
 		if ( ! this.chunks.length ) {
 			this.chunks = splitIntoChunks( this.text );
+			debugLog(
+				'chunks:',
+				this.chunks.length,
+				'avg length:',
+				Math.round(
+					this.chunks.reduce( ( s, c ) => s + c.length, 0 ) /
+						this.chunks.length
+				)
+			);
 		}
 
 		// Reset chunk position
@@ -415,6 +448,12 @@ class TTSPlayer {
 			return;
 		}
 
+		debugLog(
+			'playing chunk:',
+			this.currentChunkIndex,
+			'/',
+			this.chunks.length
+		);
 		const chunk = this.chunks[ this.currentChunkIndex ];
 		const utterance = new SpeechSynthesisUtterance( chunk );
 		utterance.lang = this.lang;
@@ -448,11 +487,14 @@ class TTSPlayer {
 
 		// Handle errors per SpeechSynthesisErrorEvent error codes (Phase 3)
 		utterance.onerror = ( event ) => {
+			debugWarn(
+				'speech error:',
+				event.error,
+				'chunk:',
+				this.currentChunkIndex
+			);
 			// 'canceled' and 'interrupted' fire after manual cancel() -- not real errors
-			if (
-				event.error === 'canceled' ||
-				event.error === 'interrupted'
-			) {
+			if ( event.error === 'canceled' || event.error === 'interrupted' ) {
 				return;
 			}
 			// language-unavailable / voice-unavailable -> show no-voice error (D-02)
@@ -483,7 +525,10 @@ class TTSPlayer {
 				this.retryPlayback( this.lastChunkIndex );
 			} else {
 				// Retry already failed -- show error and reset after 5s
-				this.showError( this.errorMessages.failed || 'Playback failed. Please try again.' );
+				this.showError(
+					this.errorMessages.failed ||
+						'Playback failed. Please try again.'
+				);
 				setTimeout( () => {
 					this.hideError();
 					this.setState( STATES.IDLE );
@@ -579,12 +624,18 @@ class TTSPlayer {
 	 * When tab returns, checks if speech stopped and retries if needed.
 	 */
 	handleVisibilityChange() {
-		if ( document.visibilityState === 'hidden' && this.state === STATES.PLAYING ) {
+		if (
+			document.visibilityState === 'hidden' &&
+			this.state === STATES.PLAYING
+		) {
 			this.lastChunkIndex = this.currentChunkIndex;
 			this.wasPlayingBeforeHidden = true;
 		}
 
-		if ( document.visibilityState === 'visible' && this.wasPlayingBeforeHidden ) {
+		if (
+			document.visibilityState === 'visible' &&
+			this.wasPlayingBeforeHidden
+		) {
 			this.wasPlayingBeforeHidden = false;
 			// Check if speech actually stopped (iOS Safari stops speech on background)
 			if ( ! speechSynthesis.speaking ) {
@@ -594,7 +645,10 @@ class TTSPlayer {
 					this.retryPlayback( this.lastChunkIndex );
 				} else {
 					// Already retried once -- show error and reset
-					this.showError( this.errorMessages.failed || 'Playback failed. Please try again.' );
+					this.showError(
+						this.errorMessages.failed ||
+							'Playback failed. Please try again.'
+					);
 					setTimeout( () => {
 						this.hideError();
 						this.setState( STATES.IDLE );
@@ -624,7 +678,9 @@ class TTSPlayer {
 
 		const hint = document.createElement( 'div' );
 		hint.className = 'tts-mute-hint';
-		hint.textContent = this.errorMessages[ 'mute-hint' ] || 'No sound? Check if your phone is not on silent mode.';
+		hint.textContent =
+			this.errorMessages[ 'mute-hint' ] ||
+			'No sound? Check if your phone is not on silent mode.';
 		this.container.querySelector( '.tts-info' ).appendChild( hint );
 
 		localStorage.setItem( hintKey, '1' );
@@ -657,10 +713,7 @@ class TTSPlayer {
 					this.progressFill.style.width = '0%';
 				}
 				if ( this.progressBar ) {
-					this.progressBar.setAttribute(
-						'aria-valuenow',
-						'0'
-					);
+					this.progressBar.setAttribute( 'aria-valuenow', '0' );
 				}
 				this.updateDuration();
 				this.setState( STATES.IDLE );
@@ -672,7 +725,9 @@ class TTSPlayer {
 	 * Toggle the speed selection popup menu.
 	 */
 	toggleSpeedMenu() {
-		if ( ! this.speedMenu ) return;
+		if ( ! this.speedMenu ) {
+			return;
+		}
 		const isOpen = this.speedMenu.getAttribute( 'aria-hidden' ) === 'false';
 		if ( isOpen ) {
 			this.closeSpeedMenu();
@@ -686,7 +741,9 @@ class TTSPlayer {
 	 * Close the speed selection popup menu.
 	 */
 	closeSpeedMenu() {
-		if ( ! this.speedMenu ) return;
+		if ( ! this.speedMenu ) {
+			return;
+		}
 		this.speedMenu.setAttribute( 'aria-hidden', 'true' );
 		this.speedBtn.setAttribute( 'aria-expanded', 'false' );
 	}
@@ -694,11 +751,16 @@ class TTSPlayer {
 	/**
 	 * Set playback speed directly. If currently playing, restarts the
 	 * current chunk immediately at the new speed.
+	 *
+	 * @param {number} newSpeed - New playback speed multiplier
 	 */
 	setSpeed( newSpeed ) {
+		debugLog( 'speed changed to:', newSpeed );
 		this.speed = newSpeed;
 		this.speedIndex = SPEED_STEPS.indexOf( newSpeed );
-		if ( this.speedIndex === -1 ) this.speedIndex = DEFAULT_SPEED_INDEX;
+		if ( this.speedIndex === -1 ) {
+			this.speedIndex = DEFAULT_SPEED_INDEX;
+		}
 
 		this.speedBtn.textContent = formatSpeed( this.speed );
 		this.speedBtn.setAttribute(
@@ -731,8 +793,7 @@ class TTSPlayer {
 		if ( ! this.chunks.length ) {
 			return;
 		}
-		const percent =
-			( this.currentChunkIndex / this.chunks.length ) * 100;
+		const percent = ( this.currentChunkIndex / this.chunks.length ) * 100;
 		if ( this.progressFill ) {
 			this.progressFill.style.width = percent + '%';
 		}
@@ -757,14 +818,9 @@ class TTSPlayer {
 		const remainingWords = this.wordCount * remainingRatio;
 		const remainingMinutes = Math.max(
 			1,
-			Math.round(
-				remainingWords / ( WORDS_PER_MINUTE * this.speed )
-			)
+			Math.round( remainingWords / ( WORDS_PER_MINUTE * this.speed ) )
 		);
-		this.durationEl.textContent = formatDuration(
-			remainingMinutes,
-			true
-		);
+		this.durationEl.textContent = formatDuration( remainingMinutes, true );
 	}
 
 	/**
@@ -775,10 +831,7 @@ class TTSPlayer {
 		if ( ! this.durationEl ) {
 			return;
 		}
-		if (
-			this.state === STATES.PLAYING ||
-			this.state === STATES.PAUSED
-		) {
+		if ( this.state === STATES.PLAYING || this.state === STATES.PAUSED ) {
 			this.updateRemainingTime();
 		} else {
 			this.durationEl.textContent = formatDuration(

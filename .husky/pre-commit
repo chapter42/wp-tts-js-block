@@ -1,0 +1,2 @@
+cd tts-js
+npx lint-staged

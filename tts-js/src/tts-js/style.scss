@@ -1,9 +1,9 @@
 /* CSS Custom Properties (per D1 -- Chapter42 brand) */
 :root {
-	--tts-primary: #FF3349;
+	--tts-primary: #ff3349;
 	--tts-dark: #00263e;
 	--tts-light: #c5cdc7;
-	--tts-font: 'Poppins', sans-serif;
+	--tts-font: "Poppins", sans-serif;
 	--tts-progress-track: rgba(0, 38, 62, 0.15);
 	--tts-progress-fill: var(--tts-primary);
 	--tts-btn-hover: rgba(0, 38, 62, 0.08);
@@ -98,7 +98,7 @@
 	transition: width 0.3s ease;
 }
 
-/* Speed button (per UI-SPEC -- 40x36, transparent bg, navy border, compact text) */
+/* Speed button (per UI-SPEC -- 40x36, transparent bg, compact text) */
 .tts-speed-btn {
 	min-width: 40px;
 	height: 36px;
@@ -260,6 +260,7 @@
 
 /* Spinner animation */
 @keyframes tts-spin {
+
 	from {
 		transform: rotate(0deg);
 	}
@@ -269,7 +270,7 @@
 	}
 }
 
-/* Error message element (per D-05 -- hidden by default, shown in error state) */
+/* Error message element (D-05 -- hidden by default, shown in error) */
 .tts-error {
 	display: none;
 	font-size: 14px;
@@ -295,6 +296,7 @@
 
 /* Mobile: 480px breakpoint */
 @media (max-width: 480px) {
+
 	.wp-block-tts-js-player {
 		padding: 8px 16px;
 	}
@@ -308,6 +310,7 @@
 
 /* Very small screens: 360px breakpoint */
 @media (max-width: 360px) {
+
 	.tts-label {
 		font-size: 15px;
 	}

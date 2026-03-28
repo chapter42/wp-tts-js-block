@@ -5,6 +5,15 @@
  * These have no browser API dependencies (no speechSynthesis, no DOM).
  */
 
+/**
+ * @typedef {Object} SpeechSynthesisVoice
+ * @property {string}  lang         - BCP 47 language tag
+ * @property {string}  name         - Human-readable voice name
+ * @property {boolean} default      - Whether this is the default voice
+ * @property {boolean} localService - Whether this is a local voice
+ * @property {string}  voiceURI     - Voice URI identifier
+ */
+
 // =============================================================================
 // Constants
 // =============================================================================
@@ -26,7 +35,19 @@ export const VOICE_TIMEOUT_MS = 3000; // per D-13
 export const VOICE_POLL_INTERVAL_MS = 100; // per D-13
 
 // Common Dutch abbreviations that should NOT trigger sentence splits (per RESEARCH Pitfall 2)
-export const DUTCH_ABBREVIATIONS = [ 'dhr', 'mevr', 'bijv', 'evt', 'nr', 'ca', 'dr', 'mr', 'prof', 'ing', 'ir' ];
+export const DUTCH_ABBREVIATIONS = [
+	'dhr',
+	'mevr',
+	'bijv',
+	'evt',
+	'nr',
+	'ca',
+	'dr',
+	'mr',
+	'prof',
+	'ing',
+	'ir',
+];
 
 // Voice quality scoring keywords (per D-11 and RESEARCH Pattern 4)
 export const QUALITY_KEYWORDS = {
@@ -87,8 +108,8 @@ export function splitIntoChunks( text ) {
  * Scoring: +10 exact lang match, +5 per quality keyword, -5 per low-quality keyword,
  * +2 for non-default voice.
  *
- * @param {SpeechSynthesisVoice[]} voices - Available voices from getVoices()
- * @param {string} langCode - Target language code (e.g. 'nl-NL')
+ * @param {SpeechSynthesisVoice[]} voices   - Available voices from getVoices()
+ * @param {string}                 langCode - Target language code (e.g. 'nl-NL')
  * @return {SpeechSynthesisVoice|null} Best matching voice, or null if none found
  */
 export function pickBestVoice( voices, langCode ) {
@@ -110,16 +131,10 @@ export function pickBestVoice( voices, langCode ) {
 			scoreB = 0;
 
 		// Exact lang match scores higher (D-11.1)
-		if (
-			a.lang === langCode ||
-			a.lang.replace( '_', '-' ) === langCode
-		) {
+		if ( a.lang === langCode || a.lang.replace( '_', '-' ) === langCode ) {
 			scoreA += 10;
 		}
-		if (
-			b.lang === langCode ||
-			b.lang.replace( '_', '-' ) === langCode
-		) {
+		if ( b.lang === langCode || b.lang.replace( '_', '-' ) === langCode ) {
 			scoreB += 10;
 		}
 
@@ -163,18 +178,21 @@ export function pickBestVoice( voices, langCode ) {
  * Estimate total reading duration in minutes.
  *
  * @param {number} wordCount - Total word count
- * @param {number} speed - Current playback speed multiplier
+ * @param {number} speed     - Current playback speed multiplier
  * @return {number} Estimated minutes (minimum 1)
  */
 export function estimateDuration( wordCount, speed ) {
-	return Math.max( 1, Math.round( wordCount / ( WORDS_PER_MINUTE * speed ) ) );
+	return Math.max(
+		1,
+		Math.round( wordCount / ( WORDS_PER_MINUTE * speed ) )
+	);
 }
 
 /**
  * Format a duration value for display.
  * During playback shows "resterend" (remaining), otherwise shows estimate.
  *
- * @param {number} minutes - Duration in minutes
+ * @param {number}  minutes   - Duration in minutes
  * @param {boolean} isPlaying - Whether playback is active
  * @return {string} Formatted duration string
  */

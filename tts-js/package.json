@@ -13,14 +13,22 @@
 		"packages-update": "wp-scripts packages-update",
 		"plugin-zip": "wp-scripts plugin-zip",
 		"start": "wp-scripts start --blocks-manifest",
-		"test": "wp-scripts test-unit-js"
+		"test": "wp-scripts test-unit-js",
+		"prepare": "cd .. && husky"
+	},
+	"lint-staged": {
+		"*.{js,jsx}": "wp-scripts lint-js --fix",
+		"*.scss": "wp-scripts lint-style --fix"
 	},
 	"dependencies": {
 		"@wordpress/block-editor": "latest",
 		"@wordpress/blocks": "latest",
+		"@wordpress/components": "latest",
 		"@wordpress/i18n": "latest"
 	},
 	"devDependencies": {
-		"@wordpress/scripts": "^31.7.0"
+		"@wordpress/scripts": "^31.7.0",
+		"husky": "^9.1.7",
+		"lint-staged": "^16.4.0"
 	}
 }
