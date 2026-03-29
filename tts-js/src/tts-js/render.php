@@ -87,12 +87,13 @@ $error_messages = [
 $msgs = $error_messages[ $lang ] ?? $error_messages['en-US'];
 
 $wrapper_attributes = get_block_wrapper_attributes( [
-	'class'           => 'tts-player',
-	'data-tts-text'   => $full_text,
-	'data-tts-lang'   => $lang,
-	'data-tts-speed'  => $speed,
-	'data-tts-words'  => $word_count,
-	'data-tts-errors' => wp_json_encode( $msgs ),
+	'class'             => 'tts-player',
+	'data-tts-text'     => $full_text,
+	'data-tts-lang'     => $lang,
+	'data-tts-speed'    => $speed,
+	'data-tts-words'    => $word_count,
+	'data-tts-errors'   => wp_json_encode( $msgs ),
+	'data-tts-highlight' => ( $attributes['enableHighlighting'] ?? true ) ? 'true' : 'false',
 ] );
 
 // SVG icons (20x20 viewBox, currentColor fill -- per UI-SPEC)

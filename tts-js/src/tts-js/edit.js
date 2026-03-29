@@ -1,5 +1,5 @@
 import { InspectorControls, useBlockProps } from '@wordpress/block-editor';
-import { PanelBody, SelectControl, TextControl } from '@wordpress/components';
+import { PanelBody, SelectControl, TextControl, ToggleControl } from '@wordpress/components';
 import { useState, useEffect } from '@wordpress/element';
 import './editor.scss';
 
@@ -108,7 +108,7 @@ function useAvailableLanguages() {
 }
 
 export default function Edit( { attributes, setAttributes } ) {
-	const { lang, speed, label } = attributes;
+	const { lang, speed, label, enableHighlighting } = attributes;
 	const blockProps = useBlockProps( {
 		className: 'tts-player tts-player--preview',
 	} );
@@ -199,6 +199,14 @@ export default function Edit( { attributes, setAttributes } ) {
 						label="Label"
 						value={ label }
 						onChange={ ( val ) => setAttributes( { label: val } ) }
+					/>
+					<ToggleControl
+						label="Tekst markeren tijdens afspelen"
+						checked={ enableHighlighting !== false }
+						onChange={ ( val ) =>
+							setAttributes( { enableHighlighting: val } )
+						}
+						__nextHasNoMarginBottom
 					/>
 				</PanelBody>
 			</InspectorControls>

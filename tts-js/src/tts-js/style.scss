@@ -9,6 +9,7 @@
 	--tts-progress-track: color-mix(in srgb, var(--tts-dark) 15%, transparent);
 	--tts-progress-fill: var(--tts-primary);
 	--tts-btn-hover: color-mix(in srgb, var(--tts-dark) 8%, transparent);
+	--tts-highlight: color-mix(in srgb, var(--tts-primary) 15%, transparent);
 
 	display: flex;
 	align-items: center;
@@ -327,6 +328,18 @@
 	padding: 4px 0 0;
 }
 
+/* Sentence highlighting (per D-11, D-12 -- injected by JS at runtime) */
+.tts-hl {
+	padding: 2px 0;
+	border-radius: 2px;
+	background-color: transparent;
+	transition: background-color 0.2s ease;
+}
+
+.tts-hl--active {
+	background-color: var(--tts-highlight);
+}
+
 /* Screen reader only -- visually hidden, accessible to AT */
 .tts-sr-announcement {
 	clip: rect(0 0 0 0);
@@ -415,6 +428,10 @@
 
 	.tts-skip-btn:active {
 		transform: none;
+	}
+
+	.tts-hl {
+		transition: none;
 	}
 }
 

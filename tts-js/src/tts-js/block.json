@@ -19,6 +19,10 @@
 		"label": {
 			"type": "string",
 			"default": "Luister naar artikel"
+		},
+		"enableHighlighting": {
+			"type": "boolean",
+			"default": true
 		}
 	},
 	"supports": {
