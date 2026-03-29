@@ -1,4 +1,4 @@
-/* global speechSynthesis, SpeechSynthesisUtterance, localStorage */
+/* global speechSynthesis, SpeechSynthesisUtterance, localStorage, requestAnimationFrame */
 
 /**
  * TTS-JS Frontend Player
@@ -191,11 +191,8 @@ class TTSPlayer {
 		this.progressFill = container.querySelector( '.tts-progress__fill' );
 
 		// Accessibility (Phase 5)
-		this.srAnnouncement = container.querySelector(
-			'.tts-sr-announcement'
-		);
-		this.a11yText =
-			A11Y_MESSAGES[ this.lang ] || A11Y_MESSAGES[ 'en-US' ];
+		this.srAnnouncement = container.querySelector( '.tts-sr-announcement' );
+		this.a11yText = A11Y_MESSAGES[ this.lang ] || A11Y_MESSAGES[ 'en-US' ];
 
 		// Event listeners
 		this.playBtn.addEventListener( 'click', () => this.togglePlay() );
@@ -214,6 +211,47 @@ class TTSPlayer {
 		}
 		// Close speed menu when clicking outside
 		document.addEventListener( 'click', () => this.closeSpeedMenu() );
+
+		// Keyboard: speed button opens menu on ArrowDown (per D-02)
+		this.speedBtn.addEventListener( 'keydown', ( e ) => {
+			if ( e.key === 'ArrowDown' ) {
+				e.preventDefault();
+				if (
+					this.speedMenu &&
+					this.speedMenu.getAttribute( 'aria-hidden' ) === 'true'
+				) {
+					this.openSpeedMenu();
+				}
+			}
+		} );
+
+		// Keyboard: speed menu navigation (per D-02, D-03, D-06)
+		if ( this.speedMenu ) {
+			this.speedMenu.addEventListener( 'keydown', ( e ) =>
+				this.handleSpeedMenuKeydown( e )
+			);
+		}
+
+		// Close speed menu when focus leaves (keyboard users tabbing away)
+		if ( this.speedMenu ) {
+			this.container
+				.querySelector( '.tts-speed-wrap' )
+				.addEventListener( 'focusout', () => {
+					// Delay to let focus settle on the new element
+					setTimeout( () => {
+						const wrap =
+							this.container.querySelector( '.tts-speed-wrap' );
+						if (
+							wrap &&
+							! wrap.contains(
+								this.container.ownerDocument.activeElement
+							)
+						) {
+							this.closeSpeedMenu();
+						}
+					}, 0 );
+				} );
+		}
 
 		// iOS tab background recovery (D-07)
 		document.addEventListener( 'visibilitychange', () =>
@@ -247,10 +285,7 @@ class TTSPlayer {
 				[ STATES.FINISHED ]: text.replay,
 			};
 			if ( labelMap[ newState ] ) {
-				this.playBtn.setAttribute(
-					'aria-label',
-					labelMap[ newState ]
-				);
+				this.playBtn.setAttribute( 'aria-label', labelMap[ newState ] );
 			}
 		}
 
@@ -814,9 +849,116 @@ class TTSPlayer {
 		if ( isOpen ) {
 			this.closeSpeedMenu();
 		} else {
-			this.speedMenu.setAttribute( 'aria-hidden', 'false' );
-			this.speedBtn.setAttribute( 'aria-expanded', 'true' );
+			this.openSpeedMenu();
 		}
+	}
+
+	/**
+	 * Open speed menu and focus the currently-selected option (per D-02).
+	 */
+	openSpeedMenu() {
+		if ( ! this.speedMenu ) {
+			return;
+		}
+		this.speedMenu.setAttribute( 'aria-hidden', 'false' );
+		this.speedBtn.setAttribute( 'aria-expanded', 'true' );
+
+		// Focus the currently-selected option (roving tabindex)
+		const options = [
+			...this.speedMenu.querySelectorAll( 'li[role="option"]' ),
+		];
+		const selectedIndex = options.findIndex(
+			( li ) => li.getAttribute( 'aria-selected' ) === 'true'
+		);
+		this.focusSpeedOption(
+			options,
+			selectedIndex >= 0 ? selectedIndex : 0
+		);
+	}
+
+	/**
+	 * Handle keyboard navigation within the speed menu (per D-02, D-03, D-06).
+	 * WAI-ARIA APG listbox pattern: Arrow keys navigate, Enter selects,
+	 * Escape closes, Tab is trapped (wraps).
+	 *
+	 * @param {KeyboardEvent} e - Keyboard event
+	 */
+	handleSpeedMenuKeydown( e ) {
+		const options = [
+			...this.speedMenu.querySelectorAll( 'li[role="option"]' ),
+		];
+		const current = options.findIndex(
+			( li ) => li.getAttribute( 'tabindex' ) === '0'
+		);
+
+		switch ( e.key ) {
+			case 'ArrowDown':
+				e.preventDefault();
+				this.focusSpeedOption(
+					options,
+					( current + 1 ) % options.length
+				);
+				break;
+			case 'ArrowUp':
+				e.preventDefault();
+				this.focusSpeedOption(
+					options,
+					( current - 1 + options.length ) % options.length
+				);
+				break;
+			case 'Enter':
+				e.preventDefault();
+				if ( current >= 0 ) {
+					this.setSpeed(
+						parseFloat( options[ current ].dataset.speed )
+					);
+				}
+				this.closeSpeedMenu();
+				this.speedBtn.focus();
+				break;
+			case 'Escape':
+				e.preventDefault();
+				this.closeSpeedMenu();
+				this.speedBtn.focus(); // per D-03
+				break;
+			case 'Home':
+				e.preventDefault();
+				this.focusSpeedOption( options, 0 );
+				break;
+			case 'End':
+				e.preventDefault();
+				this.focusSpeedOption( options, options.length - 1 );
+				break;
+			case 'Tab':
+				// D-06: Trap focus within menu -- wrap around
+				e.preventDefault();
+				if ( e.shiftKey ) {
+					this.focusSpeedOption(
+						options,
+						( current - 1 + options.length ) % options.length
+					);
+				} else {
+					this.focusSpeedOption(
+						options,
+						( current + 1 ) % options.length
+					);
+				}
+				break;
+		}
+		debugLog( 'speed menu key:', e.key );
+	}
+
+	/**
+	 * Focus a speed menu option using roving tabindex pattern.
+	 * Sets tabindex="0" on target, tabindex="-1" on all others.
+	 *
+	 * @param {Element[]} options - All speed menu option elements
+	 * @param {number}    index   - Index of the option to focus
+	 */
+	focusSpeedOption( options, index ) {
+		options.forEach( ( li ) => li.setAttribute( 'tabindex', '-1' ) );
+		options[ index ].setAttribute( 'tabindex', '0' );
+		options[ index ].focus();
 	}
 
 	/**
