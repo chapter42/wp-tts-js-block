@@ -137,48 +137,6 @@ function resolveVoice( langCode ) {
 }
 
 // =============================================================================
-// Section 5: Duration helper functions (per D-04, D-06)
-// =============================================================================
-
-/**
- * Estimate total reading duration in minutes.
- *
- * @param {number} wordCount - Total word count
- * @param {number} speed - Current playback speed multiplier
- * @return {number} Estimated minutes (minimum 1)
- */
-function estimateDuration( wordCount, speed ) {
-	return Math.max( 1, Math.round( wordCount / ( WORDS_PER_MINUTE * speed ) ) );
-}
-
-/**
- * Format a duration value for display.
- * During playback shows "resterend" (remaining), otherwise shows estimate.
- *
- * @param {number} minutes - Duration in minutes
- * @param {boolean} isPlaying - Whether playback is active
- * @return {string} Formatted duration string
- */
-function formatDuration( minutes, isPlaying ) {
-	if ( isPlaying ) {
-		return minutes < 1
-			? '< 1 min resterend'
-			: `~${ minutes } min resterend`;
-	}
-	return `~${ Math.max( 1, minutes ) } min`;
-}
-
-/**
- * Format a speed value for button display.
- *
- * @param {number} speed - Speed multiplier (e.g. 1, 1.2)
- * @return {string} Formatted speed string (e.g. "1x", "1.2x")
- */
-function formatSpeed( speed ) {
-	return Number.isInteger( speed ) ? `${ speed }x` : `${ speed }x`;
-}
-
-// =============================================================================
 // Section 5b: Safe localStorage wrappers (Safari private browsing throws on setItem)
 // =============================================================================
 
