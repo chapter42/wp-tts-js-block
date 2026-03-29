@@ -1,12 +1,118 @@
 import { InspectorControls, useBlockProps } from '@wordpress/block-editor';
 import { PanelBody, SelectControl, TextControl } from '@wordpress/components';
+import { useState, useEffect } from '@wordpress/element';
 import './editor.scss';
+
+const FALLBACK_LANGUAGES = {
+	nl: { name: 'Dutch', variants: [ { code: 'nl-NL', label: 'nl-NL' } ] },
+	en: {
+		name: 'English',
+		variants: [
+			{ code: 'en-US', label: 'en-US' },
+			{ code: 'en-GB', label: 'en-GB' },
+		],
+	},
+	de: { name: 'German', variants: [ { code: 'de-DE', label: 'de-DE' } ] },
+	fr: { name: 'French', variants: [ { code: 'fr-FR', label: 'fr-FR' } ] },
+	es: { name: 'Spanish', variants: [ { code: 'es-ES', label: 'es-ES' } ] },
+	it: { name: 'Italian', variants: [ { code: 'it-IT', label: 'it-IT' } ] },
+	pt: {
+		name: 'Portuguese',
+		variants: [
+			{ code: 'pt-BR', label: 'pt-BR' },
+			{ code: 'pt-PT', label: 'pt-PT' },
+		],
+	},
+	ja: { name: 'Japanese', variants: [ { code: 'ja-JP', label: 'ja-JP' } ] },
+	zh: {
+		name: 'Chinese',
+		variants: [
+			{ code: 'zh-CN', label: 'zh-CN' },
+			{ code: 'zh-TW', label: 'zh-TW' },
+		],
+	},
+	ko: { name: 'Korean', variants: [ { code: 'ko-KR', label: 'ko-KR' } ] },
+};
+
+function getLanguageName( baseLang ) {
+	try {
+		const displayNames = new Intl.DisplayNames( [ 'en' ], {
+			type: 'language',
+		} );
+		return displayNames.of( baseLang );
+	} catch {
+		return baseLang;
+	}
+}
+
+function useAvailableLanguages() {
+	const [ languages, setLanguages ] = useState( null );
+
+	useEffect( () => {
+		const synth =
+			window.speechSynthesis ||
+			( window.parent && window.parent.speechSynthesis );
+
+		if ( ! synth ) {
+			setLanguages( FALLBACK_LANGUAGES );
+			return;
+		}
+
+		const processVoices = ( voices ) => {
+			const langMap = {};
+			voices.forEach( ( v ) => {
+				const code = v.lang.replace( '_', '-' );
+				const baseLang = code.split( '-' )[ 0 ];
+				if ( ! langMap[ baseLang ] ) {
+					langMap[ baseLang ] = {
+						name: getLanguageName( baseLang ),
+						variants: [],
+					};
+				}
+				if (
+					! langMap[ baseLang ].variants.some(
+						( x ) => x.code === code
+					)
+				) {
+					langMap[ baseLang ].variants.push( { code, label: code } );
+				}
+			} );
+			return langMap;
+		};
+
+		const voices = synth.getVoices();
+		if ( voices.length > 0 ) {
+			setLanguages( processVoices( voices ) );
+			return;
+		}
+
+		const handleVoicesChanged = () => {
+			const v = synth.getVoices();
+			if ( v.length > 0 ) {
+				setLanguages( processVoices( v ) );
+			}
+		};
+		synth.addEventListener( 'voiceschanged', handleVoicesChanged );
+
+		const timeout = setTimeout( () => {
+			setLanguages( ( current ) => current || FALLBACK_LANGUAGES );
+		}, 3000 );
+
+		return () => {
+			clearTimeout( timeout );
+			synth.removeEventListener( 'voiceschanged', handleVoicesChanged );
+		};
+	}, [] );
+
+	return languages;
+}
 
 export default function Edit( { attributes, setAttributes } ) {
 	const { lang, speed, label } = attributes;
 	const blockProps = useBlockProps( {
 		className: 'tts-player tts-player--preview',
 	} );
+	const languages = useAvailableLanguages();
 
 	// Same SVG icons as render.php (20x20 viewBox, currentColor fill)
 	const iconPlay = (
@@ -41,15 +147,37 @@ export default function Edit( { attributes, setAttributes } ) {
 					<SelectControl
 						label="Taal"
 						value={ lang }
-						options={ [
-							{ label: 'Nederlands', value: 'nl-NL' },
-							{ label: 'English', value: 'en-US' },
-							{ label: 'Deutsch', value: 'de-DE' },
-							{ label: 'Francais', value: 'fr-FR' },
-							{ label: 'Espanol', value: 'es-ES' },
-						] }
-						onChange={ ( val ) => setAttributes( { lang: val } ) }
-					/>
+						onChange={ ( val ) =>
+							setAttributes( { lang: val } )
+						}
+						disabled={ ! languages }
+						help={
+							! languages ? 'Talen laden...' : undefined
+						}
+						__next40pxDefaultSize
+						__nextHasNoMarginBottom
+					>
+						{ languages &&
+							Object.entries( languages )
+								.sort( ( [ , a ], [ , b ] ) =>
+									a.name.localeCompare( b.name )
+								)
+								.map( ( [ baseLang, group ] ) => (
+									<optgroup
+										key={ baseLang }
+										label={ group.name }
+									>
+										{ group.variants.map( ( v ) => (
+											<option
+												key={ v.code }
+												value={ v.code }
+											>
+												{ v.label }
+											</option>
+										) ) }
+									</optgroup>
+								) ) }
+					</SelectControl>
 					<SelectControl
 						label="Standaard snelheid"
 						value={ speed }

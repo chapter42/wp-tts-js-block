@@ -110,7 +110,11 @@ Plans:
 **Depends on**: Phase 4
 **Requirements**: ADV-03
 **Sources**: todos/theme-colors.md, todos/all-browser-languages.md
-**Plans:** Not planned yet
+**Plans:** 2 plans
+
+Plans:
+- [ ] 06-01-PLAN.md — Refactor CSS custom properties to WordPress theme.json color inheritance with neutral gray fallbacks
+- [ ] 06-02-PLAN.md — Dynamic language dropdown from browser voices, className passthrough verification, build
 
 ### Phase 7: Enhanced Player Features
 **Goal**: Users can skip between chunks, resume where they left off, and see highlighted text during playback
@@ -137,6 +141,6 @@ Phases execute in numeric order: 1 → 2 → 3 (v1.0) → 4 → 5 → 6 → 7 �
 | 3. Cross-Browser + Error Handling | 3/3 | Complete | 2026-03-27 |
 | 4. Testing & Quality Assurance | 1/3 | In Progress|  |
 | 5. Accessibility & Keyboard Controls | 0/2 | Planned | — |
-| 6. Theme Integration & Language Selection | 0/0 | Not planned | — |
+| 6. Theme Integration & Language Selection | 0/2 | Planned | — |
 | 7. Enhanced Player Features | 0/0 | Not planned | — |
 | 8. Auto-Insert & WP.org Publishing | 0/0 | Not planned | — |
