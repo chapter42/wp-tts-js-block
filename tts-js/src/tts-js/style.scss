@@ -291,6 +291,47 @@
 	padding: 4px 0 0;
 }
 
+/* Resume prompt (per D-08, D-17 -- inline within .tts-info) */
+.tts-resume {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	background: var(--tts-btn-hover);
+	border-radius: 4px;
+	padding: 8px 16px;
+	margin: 4px 0 0;
+	width: 100%;
+}
+
+.tts-resume__text {
+	font-size: 14px;
+	font-weight: 400;
+	line-height: 1.4;
+	color: color-mix(in srgb, var(--tts-dark) 60%, transparent);
+	flex: 1;
+}
+
+.tts-resume__action {
+	font-size: 14px;
+	font-weight: 700;
+	line-height: 1.4;
+	color: var(--tts-primary);
+	cursor: pointer;
+	background: none;
+	border: none;
+	padding: 0;
+	white-space: nowrap;
+}
+
+.tts-resume__action:hover {
+	text-decoration: underline;
+}
+
+.tts-resume__action:focus-visible {
+	outline: 2px solid var(--tts-dark);
+	outline-offset: 2px;
+}
+
 /* ---- MOBILE RESPONSIVE (per UI-SPEC and PLAY-08) ---- */
 
 /* Mobile: 480px breakpoint */
@@ -303,6 +344,14 @@
 		min-width: 36px;
 		height: 32px;
 		font-size: 12px;
+	}
+
+	.tts-resume {
+		flex-wrap: wrap;
+	}
+
+	.tts-resume__text {
+		flex-basis: 100%;
 	}
 }
 
