@@ -104,7 +104,7 @@ $icon_stop    = '<svg class="tts-icon tts-icon--stop" width="20" height="20" vie
 $icon_error   = '<svg class="tts-icon tts-icon--error" width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="10" cy="10" r="8"/><line x1="10" y1="6" x2="10" y2="11"/><circle cx="10" cy="14" r="0.5" fill="currentColor"/></svg>';
 ?>
 <div <?php echo $wrapper_attributes; ?>>
-	<button class="tts-play-btn" aria-label="<?php echo esc_attr( $attributes['label'] ?? 'Luister naar artikel' ); ?>">
+	<button type="button" class="tts-play-btn" aria-label="<?php echo esc_attr( $attributes['label'] ?? 'Luister naar artikel' ); ?>">
 		<?php echo $icon_play; ?>
 		<?php echo $icon_pause; ?>
 		<?php echo $icon_check; ?>
@@ -119,12 +119,13 @@ $icon_error   = '<svg class="tts-icon tts-icon--error" width="20" height="20" vi
 		     aria-label="Voortgang">
 			<div class="tts-progress__fill"></div>
 		</div>
+		<span class="tts-sr-announcement" aria-live="polite" aria-atomic="true"></span>
 	</div>
 	<div class="tts-speed-wrap">
-		<button class="tts-speed-btn" aria-label="Afspeelsnelheid: 1x" aria-expanded="false">1x</button>
+		<button type="button" class="tts-speed-btn" aria-label="Afspeelsnelheid: 1x" aria-expanded="false">1x</button>
 		<ul class="tts-speed-menu" role="listbox" aria-label="Kies afspeelsnelheid" aria-hidden="true">
 			<?php foreach ( [ 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5 ] as $s ) : ?>
-				<li role="option" data-speed="<?php echo $s; ?>"<?php echo $s == 1.0 ? ' aria-selected="true" class="tts-speed-menu__active"' : ''; ?>><?php echo $s == (int) $s ? (int) $s . 'x' : $s . 'x'; ?></li>
+				<li role="option" tabindex="-1" data-speed="<?php echo $s; ?>"<?php echo $s == 1.0 ? ' aria-selected="true" class="tts-speed-menu__active"' : ''; ?>><?php echo $s == (int) $s ? (int) $s . 'x' : $s . 'x'; ?></li>
 			<?php endforeach; ?>
 		</ul>
 	</div>

@@ -99,7 +99,11 @@ Plans:
 **Depends on**: Phase 4
 **Requirements**: UX-01
 **Sources**: todos/a11y-accessible.md
-**Plans:** Not planned yet
+**Plans:** 2 plans
+
+Plans:
+- [ ] 05-01-PLAN.md — Accessibility markup in render.php + focus indicators and reduced motion in style.scss
+- [ ] 05-02-PLAN.md — Keyboard navigation, aria-label updates, and screen reader announcements in view.js
 
 ### Phase 6: Theme Integration & Language Selection
 **Goal**: Player inherits WordPress theme colors and offers a language dropdown instead of manual text input
@@ -132,7 +136,7 @@ Phases execute in numeric order: 1 → 2 → 3 (v1.0) → 4 → 5 → 6 → 7 �
 | 2. Reliable Speech + Full Player | 3/3 | Complete | 2026-03-27 |
 | 3. Cross-Browser + Error Handling | 3/3 | Complete | 2026-03-27 |
 | 4. Testing & Quality Assurance | 1/3 | In Progress|  |
-| 5. Accessibility & Keyboard Controls | 0/0 | Not planned | — |
+| 5. Accessibility & Keyboard Controls | 0/2 | Planned | — |
 | 6. Theme Integration & Language Selection | 0/0 | Not planned | — |
 | 7. Enhanced Player Features | 0/0 | Not planned | — |
 | 8. Auto-Insert & WP.org Publishing | 0/0 | Not planned | — |
