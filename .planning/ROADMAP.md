@@ -103,7 +103,7 @@ Plans:
 
 Plans:
 - [x] 05-01-PLAN.md — Accessibility markup in render.php + focus indicators and reduced motion in style.scss
-- [ ] 05-02-PLAN.md — Keyboard navigation, aria-label updates, and screen reader announcements in view.js
+- [x] 05-02-PLAN.md — Keyboard navigation, aria-label updates, and screen reader announcements in view.js
 
 ### Phase 6: Theme Integration & Language Selection
 **Goal**: Player inherits WordPress theme colors and offers a language dropdown instead of manual text input
