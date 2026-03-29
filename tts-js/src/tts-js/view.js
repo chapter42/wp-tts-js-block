@@ -66,6 +66,7 @@ const A11Y_MESSAGES = {
 		paused: 'Gepauzeerd',
 		finished: 'Afspelen voltooid',
 		speed: 'Snelheid:',
+		skipPosition: 'Zin {n} van {total}',
 	},
 	'en-US': {
 		play: 'Play',
@@ -75,6 +76,7 @@ const A11Y_MESSAGES = {
 		paused: 'Paused',
 		finished: 'Playback finished',
 		speed: 'Speed:',
+		skipPosition: 'Sentence {n} of {total}',
 	},
 };
 
@@ -194,8 +196,23 @@ class TTSPlayer {
 		this.srAnnouncement = container.querySelector( '.tts-sr-announcement' );
 		this.a11yText = A11Y_MESSAGES[ this.lang ] || A11Y_MESSAGES[ 'en-US' ];
 
+		// Skip buttons (Phase 7 -- D-02, D-16)
+		this.skipBackBtn = container.querySelector( '.tts-skip-btn--back' );
+		this.skipForwardBtn = container.querySelector( '.tts-skip-btn--forward' );
+
 		// Event listeners
 		this.playBtn.addEventListener( 'click', () => this.togglePlay() );
+
+		// Skip button listeners (per D-01, D-03)
+		if ( this.skipBackBtn ) {
+			this.skipBackBtn.addEventListener( 'click', () => this.skipBack() );
+		}
+		if ( this.skipForwardBtn ) {
+			this.skipForwardBtn.addEventListener( 'click', () =>
+				this.skipForward()
+			);
+		}
+
 		this.speedBtn.addEventListener( 'click', ( e ) => {
 			e.stopPropagation();
 			this.toggleSpeedMenu();
@@ -300,6 +317,13 @@ class TTSPlayer {
 				this.announce( announceMap[ newState ] );
 			}
 		}
+
+		// Skip buttons: tabbable only in playing/paused states (per D-04, D-16)
+		const skipBtns = this.container.querySelectorAll( '.tts-skip-btn' );
+		const isActive = newState === STATES.PLAYING || newState === STATES.PAUSED;
+		skipBtns.forEach( ( btn ) => {
+			btn.setAttribute( 'tabindex', isActive ? '0' : '-1' );
+		} );
 	}
 
 	/**
@@ -689,6 +713,55 @@ class TTSPlayer {
 		} else {
 			// Mobile: was paused at chunk boundary
 			this.playNextChunk();
+		}
+	}
+
+	/**
+	 * Skip forward one chunk (sentence). Per D-03: clamp at last chunk.
+	 * Per D-01: moves exactly one chunk.
+	 */
+	skipForward() {
+		if ( this.currentChunkIndex >= this.chunks.length - 1 ) {
+			return; // D-03: clamp
+		}
+		speechSynthesis.cancel();
+		this.currentChunkIndex++;
+		this.updateProgress();
+		this.updateRemainingTime();
+		if ( this.state === STATES.PLAYING ) {
+			this.playNextChunk();
+		}
+		this.announcePosition();
+	}
+
+	/**
+	 * Skip back one chunk (sentence). Per D-03: clamp at first chunk.
+	 * Per D-01: moves exactly one chunk.
+	 */
+	skipBack() {
+		if ( this.currentChunkIndex <= 0 ) {
+			return; // D-03: clamp
+		}
+		speechSynthesis.cancel();
+		this.currentChunkIndex--;
+		this.updateProgress();
+		this.updateRemainingTime();
+		if ( this.state === STATES.PLAYING ) {
+			this.playNextChunk();
+		}
+		this.announcePosition();
+	}
+
+	/**
+	 * Announce current chunk position to screen readers.
+	 */
+	announcePosition() {
+		const text = this.a11yText;
+		if ( text && text.skipPosition ) {
+			const msg = text.skipPosition
+				.replace( '{n}', this.currentChunkIndex + 1 )
+				.replace( '{total}', this.chunks.length );
+			this.announce( msg );
 		}
 	}
 
