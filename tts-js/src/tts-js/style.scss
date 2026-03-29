@@ -292,6 +292,52 @@
 	padding: 4px 0 0;
 }
 
+/* Screen reader only -- visually hidden, accessible to AT */
+.tts-sr-announcement {
+	clip: rect(0 0 0 0);
+	clip-path: inset(50%);
+	height: 1px;
+	overflow: hidden;
+	position: absolute;
+	white-space: nowrap;
+	width: 1px;
+}
+
+/* Focus indicators -- keyboard navigation only (per D-05) */
+/* stylelint-disable no-descending-specificity */
+.tts-play-btn:focus-visible {
+	outline: 3px solid var(--tts-dark);
+	outline-offset: 2px;
+}
+
+.tts-speed-btn:focus-visible {
+	outline: 2px solid var(--tts-dark);
+	outline-offset: 2px;
+}
+/* stylelint-enable no-descending-specificity */
+
+.tts-speed-menu li[role="option"]:focus-visible {
+	outline: 2px solid var(--tts-dark);
+	outline-offset: -2px;
+	background: var(--tts-btn-hover);
+}
+
+/* Reduced motion: respect user preference (per D-13) */
+@media (prefers-reduced-motion: reduce) {
+
+	.wp-block-tts-js-player[data-tts-state="loading"] .tts-icon--spinner {
+		animation: none;
+	}
+
+	.tts-progress__fill {
+		transition: none;
+	}
+
+	.tts-play-btn:active {
+		transform: none;
+	}
+}
+
 /* ---- MOBILE RESPONSIVE (per UI-SPEC and PLAY-08) ---- */
 
 /* Mobile: 480px breakpoint */
