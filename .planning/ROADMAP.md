@@ -123,7 +123,7 @@ Plans:
 **Plans:** 3 plans
 
 Plans:
-- [ ] 07-01-PLAN.md — Skip forward/back buttons with SVG icons, CSS state visibility, and TTSPlayer skip methods
+- [x] 07-01-PLAN.md — Skip forward/back buttons with SVG icons, CSS state visibility, and TTSPlayer skip methods
 - [ ] 07-02-PLAN.md — Position memory with localStorage persistence, resume prompt UI, and 7-day expiry
 - [ ] 07-03-PLAN.md — Sentence highlighting with DOM span injection, auto-scroll, and editor toggle control
 
