@@ -120,7 +120,12 @@ Plans:
 **Goal**: Users can skip between chunks, resume where they left off, and see highlighted text during playback
 **Depends on**: Phase 5
 **Requirements**: UX-03, UX-04, ADV-01
-**Plans:** Not planned yet
+**Plans:** 3 plans
+
+Plans:
+- [ ] 07-01-PLAN.md — Skip forward/back buttons with SVG icons, CSS state visibility, and TTSPlayer skip methods
+- [ ] 07-02-PLAN.md — Position memory with localStorage persistence, resume prompt UI, and 7-day expiry
+- [ ] 07-03-PLAN.md — Sentence highlighting with DOM span injection, auto-scroll, and editor toggle control
 
 ### Phase 8: Auto-Insert & WordPress.org Publishing
 **Goal**: Plugin can auto-insert on all posts, has voice diagnostics, and is ready for WordPress.org submission
@@ -142,5 +147,5 @@ Phases execute in numeric order: 1 → 2 → 3 (v1.0) → 4 → 5 → 6 → 7 �
 | 4. Testing & Quality Assurance | 1/3 | In Progress|  |
 | 5. Accessibility & Keyboard Controls | 0/2 | Planned | — |
 | 6. Theme Integration & Language Selection | 0/2 | Planned | — |
-| 7. Enhanced Player Features | 0/0 | Not planned | — |
+| 7. Enhanced Player Features | 0/3 | Planned | — |
 | 8. Auto-Insert & WP.org Publishing | 0/0 | Not planned | — |

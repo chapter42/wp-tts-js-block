@@ -102,14 +102,22 @@ $icon_check   = '<svg class="tts-icon tts-icon--check" width="20" height="20" vi
 $icon_spinner = '<svg class="tts-icon tts-icon--spinner" width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M10 2a8 8 0 0 1 8 8" stroke-linecap="round"/></svg>';
 $icon_stop    = '<svg class="tts-icon tts-icon--stop" width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><rect x="4" y="4" width="12" height="12"/></svg>';
 $icon_error   = '<svg class="tts-icon tts-icon--error" width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="10" cy="10" r="8"/><line x1="10" y1="6" x2="10" y2="11"/><circle cx="10" cy="14" r="0.5" fill="currentColor"/></svg>';
+$icon_skip_back = '<svg class="tts-icon tts-icon--skip-back" width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><polygon points="10,4 2,10 10,16"/><polygon points="18,4 10,10 18,16"/></svg>';
+$icon_skip_forward = '<svg class="tts-icon tts-icon--skip-forward" width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><polygon points="2,4 10,10 2,16"/><polygon points="10,4 18,10 10,16"/></svg>';
 ?>
 <div <?php echo $wrapper_attributes; ?>>
+	<button type="button" class="tts-skip-btn tts-skip-btn--back" aria-label="Vorige zin" tabindex="-1">
+		<?php echo $icon_skip_back; ?>
+	</button>
 	<button type="button" class="tts-play-btn" aria-label="<?php echo esc_attr( $attributes['label'] ?? 'Luister naar artikel' ); ?>">
 		<?php echo $icon_play; ?>
 		<?php echo $icon_pause; ?>
 		<?php echo $icon_check; ?>
 		<?php echo $icon_spinner; ?>
 		<?php echo $icon_error; ?>
+	</button>
+	<button type="button" class="tts-skip-btn tts-skip-btn--forward" aria-label="Volgende zin" tabindex="-1">
+		<?php echo $icon_skip_forward; ?>
 	</button>
 	<div class="tts-info">
 		<span class="tts-label"><?php echo $label; ?></span>

@@ -203,8 +203,20 @@ export default function Edit( { attributes, setAttributes } ) {
 				</PanelBody>
 			</InspectorControls>
 			<div { ...blockProps }>
+				<button className="tts-skip-btn tts-skip-btn--back" disabled aria-label="Vorige zin" style={ { display: 'flex' } }>
+					<svg className="tts-icon tts-icon--skip-back" width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+						<polygon points="10,4 2,10 10,16" />
+						<polygon points="18,4 10,10 18,16" />
+					</svg>
+				</button>
 				<button className="tts-play-btn" disabled aria-label={ label }>
 					{ iconPlay }
+				</button>
+				<button className="tts-skip-btn tts-skip-btn--forward" disabled aria-label="Volgende zin" style={ { display: 'flex' } }>
+					<svg className="tts-icon tts-icon--skip-forward" width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+						<polygon points="2,4 10,10 2,16" />
+						<polygon points="10,4 18,10 10,16" />
+					</svg>
 				</button>
 				<div className="tts-info">
 					<span className="tts-label">{ label }</span>

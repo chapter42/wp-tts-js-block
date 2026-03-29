@@ -47,6 +47,36 @@
 	transform: scale(0.95);
 }
 
+/* Skip buttons (per D-02, D-04, D-05 -- 36x36, transparent, circular) */
+.tts-skip-btn {
+	width: 36px;
+	height: 36px;
+	min-width: 36px;
+	border: none;
+	background: transparent;
+	color: var(--tts-dark);
+	cursor: pointer;
+	display: none; /* Hidden by default -- shown via state selectors */
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	padding: 0;
+	border-radius: 50%;
+}
+
+.tts-skip-btn:hover {
+	background: var(--tts-btn-hover);
+}
+
+.tts-skip-btn:active {
+	transform: scale(0.95);
+}
+
+.tts-skip-btn:focus-visible {
+	outline: 2px solid var(--tts-dark);
+	outline-offset: 2px;
+}
+
 /* Info section (per UI-SPEC -- flex:1, stacked label + duration) */
 .tts-info {
 	flex: 1;
@@ -204,11 +234,19 @@
 	display: inline-block;
 }
 
+.wp-block-tts-js-player[data-tts-state="playing"] .tts-skip-btn {
+	display: flex;
+}
+
 .wp-block-tts-js-player[data-tts-state="playing"] .tts-progress {
 	display: block;
 }
 
 /* PAUSED state: show play icon (resume) */
+.wp-block-tts-js-player[data-tts-state="paused"] .tts-skip-btn {
+	display: flex;
+}
+
 .wp-block-tts-js-player[data-tts-state="paused"] .tts-progress {
 	display: block;
 }
@@ -333,6 +371,10 @@
 	.tts-play-btn:active {
 		transform: none;
 	}
+
+	.tts-skip-btn:active {
+		transform: none;
+	}
 }
 
 /* ---- MOBILE RESPONSIVE (per UI-SPEC and PLAY-08) ---- */
@@ -342,6 +384,12 @@
 
 	.wp-block-tts-js-player {
 		padding: 8px 16px;
+	}
+
+	.tts-skip-btn {
+		width: 32px;
+		height: 32px;
+		min-width: 32px;
 	}
 
 	.tts-speed-btn {
@@ -360,5 +408,10 @@
 
 	.tts-duration {
 		font-size: 13px;
+	}
+
+	.tts-skip-btn .tts-icon {
+		width: 16px;
+		height: 16px;
 	}
 }
