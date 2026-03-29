@@ -113,8 +113,8 @@ Plans:
 **Plans:** 2 plans
 
 Plans:
-- [ ] 06-01-PLAN.md — Refactor CSS custom properties to WordPress theme.json color inheritance with neutral gray fallbacks
-- [ ] 06-02-PLAN.md — Dynamic language dropdown from browser voices, className passthrough verification, build
+- [x] 06-01-PLAN.md — Refactor CSS custom properties to WordPress theme.json color inheritance with neutral gray fallbacks
+- [x] 06-02-PLAN.md — Dynamic language dropdown from browser voices, className passthrough verification, build
 
 ### Phase 7: Enhanced Player Features
 **Goal**: Users can skip between chunks, resume where they left off, and see highlighted text during playback

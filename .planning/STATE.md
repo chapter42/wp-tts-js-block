@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: — Enhanced UX & Quality
 status: verifying
-stopped_at: Completed 05-02-PLAN.md
-last_updated: "2026-03-29T12:45:33.845Z"
+stopped_at: Completed 06-02-PLAN.md
+last_updated: "2026-03-29T14:37:13.516Z"
 last_activity: 2026-03-29
 progress:
   total_phases: 8
-  completed_phases: 4
-  total_plans: 14
-  completed_plans: 13
+  completed_phases: 5
+  total_plans: 16
+  completed_plans: 15
   percent: 0
 ---
 
@@ -21,12 +21,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-27)
 
 **Core value:** Bezoekers van chapter42.com kunnen artikelen beluisteren via een native browser TTS player, zonder externe services of kosten.
-**Current focus:** Phase 05 — a11y-keyboard
+**Current focus:** Phase 06 — theme-language
 
 ## Current Position
 
-Phase: 06
-Plan: Not started
+Phase: 06 (theme-language) — EXECUTING
+Plan: 2 of 2
 Status: Phase complete — ready for verification
 Last activity: 2026-03-29
 
@@ -64,6 +64,8 @@ Progress: [..........] 0%
 | Phase 04 P02 | 6min | 1 tasks | 7 files |
 | Phase 05 P01 | 2min | 2 tasks | 2 files |
 | Phase 05 P02 | 2min | 2 tasks | 1 files |
+| Phase 06 P01 | 1min | 1 tasks | 1 files |
+| Phase 06 P02 | 1min | 2 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -89,6 +91,9 @@ Recent decisions affecting current work:
 - [Phase 04]: Used /* global */ directive for browser APIs + SpeechSynthesisVoice JSDoc typedef for lint compliance
 - [Phase 05]: Used outline instead of box-shadow for focus indicators (Windows High Contrast Mode safe)
 - [Phase 05]: Used ownerDocument.activeElement instead of document.activeElement per WordPress lint rule
+- [Phase 06]: Scoped CSS vars to .wp-block-tts-js-player; nested var() fallback chain for theme.json slug compatibility; color-mix() for all derived colors
+- [Phase 06]: D-05: Dynamic language list from speechSynthesis.getVoices() replaces hardcoded 5-option list
+- [Phase 06]: D-08: 10-language curated fallback after 3s timeout
 
 ### Roadmap Evolution
 
@@ -110,6 +115,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-29T12:41:11.022Z
-Stopped at: Completed 05-02-PLAN.md
+Last session: 2026-03-29T14:37:13.512Z
+Stopped at: Completed 06-02-PLAN.md
 Resume file: None
