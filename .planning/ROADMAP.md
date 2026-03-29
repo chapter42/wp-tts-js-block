@@ -102,7 +102,7 @@ Plans:
 **Plans:** 2 plans
 
 Plans:
-- [ ] 05-01-PLAN.md — Accessibility markup in render.php + focus indicators and reduced motion in style.scss
+- [x] 05-01-PLAN.md — Accessibility markup in render.php + focus indicators and reduced motion in style.scss
 - [ ] 05-02-PLAN.md — Keyboard navigation, aria-label updates, and screen reader announcements in view.js
 
 ### Phase 6: Theme Integration & Language Selection

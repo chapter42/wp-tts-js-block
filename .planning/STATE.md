@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: — Enhanced UX & Quality
 status: executing
-stopped_at: Completed 04-02-PLAN.md
-last_updated: "2026-03-28T10:41:32.985Z"
-last_activity: 2026-03-28
+stopped_at: Completed 05-01-PLAN.md
+last_updated: "2026-03-29T12:36:28.555Z"
+last_activity: 2026-03-29
 progress:
   total_phases: 8
   completed_phases: 3
-  total_plans: 12
-  completed_plans: 11
+  total_plans: 14
+  completed_plans: 12
   percent: 0
 ---
 
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-27)
 
 **Core value:** Bezoekers van chapter42.com kunnen artikelen beluisteren via een native browser TTS player, zonder externe services of kosten.
-**Current focus:** Phase 04 — testing-qa
+**Current focus:** Phase 05 — a11y-keyboard
 
 ## Current Position
 
-Phase: 04 (testing-qa) — EXECUTING
-Plan: 3 of 3
+Phase: 05 (a11y-keyboard) — EXECUTING
+Plan: 2 of 2
 Status: Ready to execute
-Last activity: 2026-03-28
+Last activity: 2026-03-29
 
 Progress: [..........] 0%
 
@@ -62,6 +62,7 @@ Progress: [..........] 0%
 | Phase 03 P03 | 2min | 1 tasks | 1 files |
 | Phase 04 P01 | 3min | 2 tasks | 4 files |
 | Phase 04 P02 | 6min | 1 tasks | 7 files |
+| Phase 05 P01 | 2min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -85,6 +86,7 @@ Recent decisions affecting current work:
 - [Phase 03]: retryPlayback() resumes from lastChunkIndex using existing chunked playback
 - [Phase 04]: Extracted 5 pure functions + 9 constants to utils.js for testability without DOM/speechSynthesis mocking
 - [Phase 04]: Used /* global */ directive for browser APIs + SpeechSynthesisVoice JSDoc typedef for lint compliance
+- [Phase 05]: Used outline instead of box-shadow for focus indicators (Windows High Contrast Mode safe)
 
 ### Roadmap Evolution
 
@@ -106,6 +108,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-28T10:41:32.982Z
-Stopped at: Completed 04-02-PLAN.md
+Last session: 2026-03-29T12:36:28.552Z
+Stopped at: Completed 05-01-PLAN.md
 Resume file: None
