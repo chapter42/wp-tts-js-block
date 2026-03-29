@@ -122,6 +122,11 @@ $icon_skip_forward = '<svg class="tts-icon tts-icon--skip-forward" width="20" he
 	<div class="tts-info">
 		<span class="tts-label"><?php echo $label; ?></span>
 		<span class="tts-duration" aria-live="polite">~<?php echo $reading_minutes; ?> min</span>
+		<div class="tts-resume" style="display:none;">
+			<span class="tts-resume__text"></span>
+			<button type="button" class="tts-resume__action tts-resume__action--continue">Ga verder</button>
+			<button type="button" class="tts-resume__action tts-resume__action--restart">Begin opnieuw</button>
+		</div>
 		<div class="tts-progress" role="progressbar"
 		     aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"
 		     aria-label="Voortgang">

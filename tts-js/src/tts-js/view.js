@@ -137,10 +137,103 @@ function resolveVoice( langCode ) {
 }
 
 // =============================================================================
-// Section 2: TTSPlayer class
+// Section 5: Duration helper functions (per D-04, D-06)
+// =============================================================================
+
+/**
+ * Estimate total reading duration in minutes.
+ *
+ * @param {number} wordCount - Total word count
+ * @param {number} speed - Current playback speed multiplier
+ * @return {number} Estimated minutes (minimum 1)
+ */
+function estimateDuration( wordCount, speed ) {
+	return Math.max( 1, Math.round( wordCount / ( WORDS_PER_MINUTE * speed ) ) );
+}
+
+/**
+ * Format a duration value for display.
+ * During playback shows "resterend" (remaining), otherwise shows estimate.
+ *
+ * @param {number} minutes - Duration in minutes
+ * @param {boolean} isPlaying - Whether playback is active
+ * @return {string} Formatted duration string
+ */
+function formatDuration( minutes, isPlaying ) {
+	if ( isPlaying ) {
+		return minutes < 1
+			? '< 1 min resterend'
+			: `~${ minutes } min resterend`;
+	}
+	return `~${ Math.max( 1, minutes ) } min`;
+}
+
+/**
+ * Format a speed value for button display.
+ *
+ * @param {number} speed - Speed multiplier (e.g. 1, 1.2)
+ * @return {string} Formatted speed string (e.g. "1x", "1.2x")
+ */
+function formatSpeed( speed ) {
+	return Number.isInteger( speed ) ? `${ speed }x` : `${ speed }x`;
+}
+
+// =============================================================================
+// Section 5b: Safe localStorage wrappers (Safari private browsing throws on setItem)
+// =============================================================================
+
+function safeSetItem( key, value ) {
+	try {
+		localStorage.setItem( key, value );
+		return true;
+	} catch {
+		return false;
+	}
+}
+
+function safeGetItem( key ) {
+	try {
+		return localStorage.getItem( key );
+	} catch {
+		return null;
+	}
+}
+
+function safeRemoveItem( key ) {
+	try {
+		localStorage.removeItem( key );
+	} catch {
+		// Ignore
+	}
+}
+
+// =============================================================================
+// Section 6: TTSPlayer class
 // =============================================================================
 
 class TTSPlayer {
+	/**
+	 * Load saved position from localStorage. Returns null if expired or missing.
+	 * Per D-06: key is pathname-scoped. Per D-09: 7-day expiry.
+	 */
+	static loadPosition() {
+		const key = `tts-position-${ window.location.pathname }`;
+		const raw = safeGetItem( key );
+		if ( ! raw ) return null;
+		try {
+			const data = JSON.parse( raw );
+			if ( ! data || typeof data.chunkIndex !== 'number' ) return null;
+			const SEVEN_DAYS = 7 * 24 * 60 * 60 * 1000;
+			if ( Date.now() - data.timestamp > SEVEN_DAYS ) {
+				safeRemoveItem( key );
+				return null;
+			}
+			return data.chunkIndex;
+		} catch {
+			return null;
+		}
+	}
+
 	constructor( container ) {
 		this.container = container;
 		this.text = container.dataset.ttsText || '';
@@ -275,9 +368,22 @@ class TTSPlayer {
 			this.handleVisibilityChange()
 		);
 
+		// Save position on page unload (per D-07)
+		window.addEventListener( 'beforeunload', () => {
+			if ( this.state === STATES.PLAYING || this.state === STATES.PAUSED ) {
+				this.savePosition();
+			}
+		} );
+
 		// Set initial state and duration display
 		this.setState( STATES.IDLE );
 		this.updateDuration();
+
+		// Position memory: check for saved position (per D-08)
+		const savedChunk = TTSPlayer.loadPosition();
+		if ( savedChunk !== null && savedChunk > 0 ) {
+			this.showResumePrompt( savedChunk );
+		}
 	}
 
 	/**
@@ -515,6 +621,10 @@ class TTSPlayer {
 			return;
 		}
 
+		// Hide resume prompt if visible
+		const resumeEl = this.container.querySelector( '.tts-resume' );
+		if ( resumeEl ) resumeEl.style.display = 'none';
+
 		this.setState( STATES.LOADING );
 
 		// Split text into chunks if not already done
@@ -700,6 +810,9 @@ class TTSPlayer {
 			speechSynthesis.pause();
 		}
 		this.setState( STATES.PAUSED );
+
+		// Save position on pause (per D-07)
+		this.savePosition();
 	}
 
 	/**
@@ -820,6 +933,8 @@ class TTSPlayer {
 		) {
 			this.lastChunkIndex = this.currentChunkIndex;
 			this.wasPlayingBeforeHidden = true;
+			// Save position when tab goes hidden (per D-07)
+			this.savePosition();
 		}
 
 		if (
@@ -886,6 +1001,9 @@ class TTSPlayer {
 	 * Shows finished state, then resets to idle after 3 seconds.
 	 */
 	handleFinished() {
+		// Clear saved position on finish (per D-10)
+		this.clearPosition();
+
 		this.setState( STATES.FINISHED );
 
 		// Set progress to 100%
@@ -1143,6 +1261,118 @@ class TTSPlayer {
 				false
 			);
 		}
+	}
+
+	/**
+	 * Save current chunk index to localStorage. Per D-07: on pause and beforeunload.
+	 */
+	savePosition() {
+		if ( ! this.chunks.length || this.currentChunkIndex <= 0 ) return;
+		const key = `tts-position-${ window.location.pathname }`;
+		safeSetItem( key, JSON.stringify( {
+			chunkIndex: this.currentChunkIndex,
+			timestamp: Date.now(),
+		} ) );
+	}
+
+	/**
+	 * Clear saved position from localStorage. Per D-10: on playback finish.
+	 */
+	clearPosition() {
+		const key = `tts-position-${ window.location.pathname }`;
+		safeRemoveItem( key );
+	}
+
+	/**
+	 * Show resume prompt within the player. Per D-08: user chooses to resume or start fresh.
+	 */
+	showResumePrompt( chunkIndex ) {
+		const resumeEl = this.container.querySelector( '.tts-resume' );
+		if ( ! resumeEl ) return;
+
+		const textEl = resumeEl.querySelector( '.tts-resume__text' );
+		if ( textEl ) {
+			const langPrefix = this.lang.startsWith( 'nl' ) ? 'nl' : 'en';
+			textEl.textContent = langPrefix === 'nl'
+				? `Verder luisteren vanaf zin ${ chunkIndex + 1 }?`
+				: `Continue from sentence ${ chunkIndex + 1 }?`;
+		}
+
+		resumeEl.style.display = '';
+
+		const continueBtn = resumeEl.querySelector( '.tts-resume__action--continue' );
+		const restartBtn = resumeEl.querySelector( '.tts-resume__action--restart' );
+
+		if ( continueBtn ) {
+			continueBtn.addEventListener( 'click', () => {
+				resumeEl.style.display = 'none';
+				this.resumeFromSavedPosition( chunkIndex );
+			}, { once: true } );
+		}
+
+		if ( restartBtn ) {
+			restartBtn.addEventListener( 'click', () => {
+				resumeEl.style.display = 'none';
+				this.clearPosition();
+			}, { once: true } );
+		}
+	}
+
+	/**
+	 * Start playback from a saved chunk index. Uses the same flow as startPlayback
+	 * but sets currentChunkIndex before playing.
+	 */
+	async resumeFromSavedPosition( chunkIndex ) {
+		if ( ! this.text ) return;
+
+		// Claim user gesture
+		const unlock = new SpeechSynthesisUtterance( '' );
+		speechSynthesis.speak( unlock );
+		speechSynthesis.cancel();
+
+		// Check capabilities if needed
+		if ( ! this.capabilitiesChecked ) {
+			this.capabilitiesChecked = true;
+			const capable = await this.checkCapabilities();
+			if ( ! capable ) return;
+		}
+
+		this.setState( STATES.LOADING );
+
+		// Split text into chunks if not done
+		if ( ! this.chunks.length ) {
+			this.chunks = splitIntoChunks( this.text );
+		}
+
+		// Resolve voice if needed
+		if ( this.resolvedVoice === null ) {
+			if ( this.selectedVoice ) {
+				this.resolvedVoice = this.selectedVoice;
+			} else {
+				const voice = await resolveVoice( this.lang );
+				if ( voice === null ) {
+					this.showError( this.errorMessages[ 'no-voice' ] || 'No voice available for this language.' );
+					return;
+				}
+				this.resolvedVoice = voice;
+			}
+		}
+
+		// Set position to saved index (clamped to valid range)
+		this.currentChunkIndex = Math.min( chunkIndex, this.chunks.length - 1 );
+		this.updateProgress();
+		this.updateRemainingTime();
+
+		speechSynthesis.cancel();
+		this.playNextChunk();
+
+		this.loadingTimeout = setTimeout( () => {
+			if ( this.state === STATES.LOADING ) {
+				speechSynthesis.cancel();
+				this.setState( STATES.IDLE );
+			}
+			this.loadingTimeout = null;
+		}, 3000 );
 	}
 }
 
