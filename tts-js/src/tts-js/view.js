@@ -166,6 +166,31 @@ function safeRemoveItem( key ) {
 }
 
 // =============================================================================
+// Section 5c: Highlight auto-scroll helper (per D-13, Pitfall 3)
+// =============================================================================
+
+/**
+ * Only scroll if element is not already visible in viewport.
+ * Respects prefers-reduced-motion (per D-13).
+ *
+ * @param {Element} element - DOM element to scroll into view
+ */
+function scrollIntoViewIfNeeded( element ) {
+	const rect = element.getBoundingClientRect();
+	const viewHeight =
+		window.innerHeight || document.documentElement.clientHeight;
+	if ( rect.top < 0 || rect.bottom > viewHeight ) {
+		const prefersReduced = window.matchMedia(
+			'(prefers-reduced-motion: reduce)'
+		).matches;
+		element.scrollIntoView( {
+			behavior: prefersReduced ? 'auto' : 'smooth',
+			block: 'center',
+		} );
+	}
+}
+
+// =============================================================================
 // Section 6: TTSPlayer class
 // =============================================================================
 
@@ -222,6 +247,11 @@ class TTSPlayer {
 		// Capability detection state (Phase 3 -- D-12)
 		this.selectedVoice = null;
 		this.capabilitiesChecked = false;
+
+		// Highlighting state (Phase 7 -- D-11, D-14)
+		this.highlightingEnabled =
+			container.dataset.ttsHighlight === 'true';
+		this.highlightSpansInjected = false;
 
 		// Resilience state (Phase 3 Plan 03 -- D-03, D-07, D-08)
 		this.hasRetried = false;
@@ -628,6 +658,9 @@ class TTSPlayer {
 		// Start chunk playback
 		this.playNextChunk();
 
+		// Inject highlight spans (per D-11)
+		this.injectHighlightSpans();
+
 		// Loading timeout: if onstart doesn't fire in 3 seconds, reset
 		this.loadingTimeout = setTimeout( () => {
 			if ( this.state === STATES.LOADING ) {
@@ -684,6 +717,8 @@ class TTSPlayer {
 			}
 			// Reset retry flag on successful start -- allows future retries
 			this.hasRetried = false;
+			// Update highlight position (per D-12)
+			this.updateHighlight();
 		};
 
 		// Chain to next chunk on completion (D-03)
@@ -803,6 +838,7 @@ class TTSPlayer {
 			this.playNextChunk();
 		}
 		this.announcePosition();
+		this.updateHighlight();
 	}
 
 	/**
@@ -821,6 +857,7 @@ class TTSPlayer {
 			this.playNextChunk();
 		}
 		this.announcePosition();
+		this.updateHighlight();
 	}
 
 	/**
@@ -834,6 +871,250 @@ class TTSPlayer {
 				.replace( '{total}', this.chunks.length );
 			this.announce( msg );
 		}
+	}
+
+	/**
+	 * Walk article content and wrap sentences in <span class="tts-hl" data-chunk="N">.
+	 * Per D-11: JS runtime injection, no render.php changes for highlighting.
+	 * Maps chunks to DOM paragraphs/headings using textContent matching.
+	 */
+	injectHighlightSpans() {
+		if ( ! this.highlightingEnabled || this.highlightSpansInjected ) {
+			return;
+		}
+		if ( ! this.chunks.length ) {
+			return;
+		}
+
+		// Find article content container
+		const article =
+			this.container.closest( '.entry-content' ) ||
+			this.container.closest( 'article' ) ||
+			this.container.closest( '.post-content' );
+		if ( ! article ) {
+			debugLog( 'highlight: no article container found' );
+			return;
+		}
+
+		// Collect content elements (paragraphs and headings)
+		const contentEls = [
+			...article.querySelectorAll( 'p, h1, h2, h3, h4, h5, h6' ),
+		];
+		if ( ! contentEls.length ) {
+			return;
+		}
+
+		// Skip title chunks -- render.php prepends title but DOM <h1> is usually outside .entry-content
+		let chunkOffset = 0;
+		const pageTitle = document.querySelector(
+			'h1.entry-title, h1.post-title, article h1, .wp-block-post-title'
+		);
+		if ( pageTitle && this.chunks.length > 0 ) {
+			const titleText = pageTitle.textContent.trim();
+			if (
+				this.chunks[ 0 ].trim() === titleText ||
+				titleText.startsWith( this.chunks[ 0 ].trim() )
+			) {
+				chunkOffset = 1;
+				let titleAccum = '';
+				for (
+					let i = 0;
+					i < this.chunks.length && i < 3;
+					i++
+				) {
+					titleAccum +=
+						( titleAccum ? ' ' : '' ) +
+						this.chunks[ i ].trim();
+					if (
+						titleAccum === titleText ||
+						titleAccum.length >= titleText.length
+					) {
+						chunkOffset = i + 1;
+						break;
+					}
+				}
+				debugLog(
+					'highlight: skipping',
+					chunkOffset,
+					'title chunk(s)'
+				);
+			}
+		}
+
+		// Map chunks to content elements using textContent matching and wrap in spans
+		let currentElIndex = 0;
+		let elTextOffset = 0;
+
+		for (
+			let ci = chunkOffset;
+			ci < this.chunks.length;
+			ci++
+		) {
+			if ( currentElIndex >= contentEls.length ) {
+				break;
+			}
+
+			const el = contentEls[ currentElIndex ];
+			const chunkText = this.chunks[ ci ].trim();
+
+			// Find chunk within current element's text
+			const elText = el.textContent;
+			const pos = elText.indexOf( chunkText, elTextOffset );
+
+			if ( pos === -1 ) {
+				// Try next element
+				currentElIndex++;
+				elTextOffset = 0;
+				ci--; // Retry this chunk
+				continue;
+			}
+
+			// Walk text nodes to find and wrap the chunk text
+			const textNodes = [];
+			const walker = document.createTreeWalker(
+				el,
+				NodeFilter.SHOW_TEXT,
+				null
+			);
+			let node;
+			while ( ( node = walker.nextNode() ) ) {
+				if ( node.textContent.trim() ) {
+					textNodes.push( node );
+				}
+			}
+
+			// Find chunk position within concatenated text nodes
+			let accumulated = '';
+			for ( const tn of textNodes ) {
+				const tnText = tn.textContent;
+				const fullAccum = accumulated + tnText;
+				const chunkPos = fullAccum.indexOf(
+					chunkText,
+					elTextOffset
+				);
+
+				if ( chunkPos !== -1 ) {
+					const chunkEnd = chunkPos + chunkText.length;
+					const tnStart = accumulated.length;
+					const tnEnd = tnStart + tnText.length;
+
+					if (
+						chunkPos >= tnStart &&
+						chunkEnd <= tnEnd
+					) {
+						// Chunk is entirely within this text node
+						const localStart = chunkPos - tnStart;
+						const localEnd =
+							localStart + chunkText.length;
+
+						const span = document.createElement( 'span' );
+						span.className = 'tts-hl';
+						span.dataset.chunk = ci;
+
+						if (
+							localStart === 0 &&
+							localEnd === tnText.length
+						) {
+							tn.parentNode.insertBefore( span, tn );
+							span.appendChild( tn );
+						} else {
+							const before = tnText.substring(
+								0,
+								localStart
+							);
+							const middle = tnText.substring(
+								localStart,
+								localEnd
+							);
+							const after = tnText.substring( localEnd );
+
+							const spanText =
+								document.createTextNode( middle );
+							span.appendChild( spanText );
+
+							const parent = tn.parentNode;
+							if ( after ) {
+								parent.insertBefore(
+									document.createTextNode( after ),
+									tn.nextSibling
+								);
+							}
+							parent.insertBefore(
+								span,
+								tn.nextSibling || null
+							);
+							if ( before ) {
+								tn.textContent = before;
+							} else {
+								parent.removeChild( tn );
+							}
+						}
+
+						elTextOffset = chunkEnd;
+						break;
+					}
+					// Chunk spans multiple text nodes -- skip wrapping for robustness
+					elTextOffset = chunkEnd;
+					break;
+				}
+
+				accumulated += tnText;
+			}
+		}
+
+		this.highlightSpansInjected = true;
+		debugLog( 'highlight: spans injected' );
+	}
+
+	/**
+	 * Move the active highlight to the current chunk.
+	 * Per D-12: active chunk gets tts-hl--active class.
+	 * Per D-13: auto-scroll to keep highlighted sentence visible.
+	 */
+	updateHighlight() {
+		if ( ! this.highlightingEnabled || ! this.highlightSpansInjected ) {
+			return;
+		}
+
+		// Remove active from previous
+		const prev = document.querySelector( '.tts-hl--active' );
+		if ( prev ) {
+			prev.classList.remove( 'tts-hl--active' );
+		}
+
+		// Add active to current
+		const current = document.querySelector(
+			`.tts-hl[data-chunk="${ this.currentChunkIndex }"]`
+		);
+		if ( current ) {
+			current.classList.add( 'tts-hl--active' );
+			scrollIntoViewIfNeeded( current );
+		}
+	}
+
+	/**
+	 * Remove all injected highlight spans and restore original text.
+	 * Per D-15: cleanup on stop/finish.
+	 */
+	removeHighlightSpans() {
+		if ( ! this.highlightSpansInjected ) {
+			return;
+		}
+
+		const spans = document.querySelectorAll( '.tts-hl' );
+		spans.forEach( ( span ) => {
+			const parent = span.parentNode;
+			if ( parent ) {
+				parent.replaceChild(
+					document.createTextNode( span.textContent ),
+					span
+				);
+				parent.normalize(); // Merge adjacent text nodes
+			}
+		} );
+
+		this.highlightSpansInjected = false;
+		debugLog( 'highlight: spans removed' );
 	}
 
 	/**
@@ -860,6 +1141,9 @@ class TTSPlayer {
 
 		// Reset duration to estimated total
 		this.updateDuration();
+
+		// Remove highlight spans (per D-15)
+		this.removeHighlightSpans();
 
 		this.setState( STATES.IDLE );
 	}
@@ -961,6 +1245,9 @@ class TTSPlayer {
 	handleFinished() {
 		// Clear saved position on finish (per D-10)
 		this.clearPosition();
+
+		// Remove highlight spans (per D-15)
+		this.removeHighlightSpans();
 
 		this.setState( STATES.FINISHED );
 
@@ -1323,6 +1610,9 @@ class TTSPlayer {
 
 		speechSynthesis.cancel();
 		this.playNextChunk();
+
+		// Inject highlight spans (per D-11)
+		this.injectHighlightSpans();
 
 		this.loadingTimeout = setTimeout( () => {
 			if ( this.state === STATES.LOADING ) {
