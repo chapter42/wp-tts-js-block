@@ -54,6 +54,31 @@ function debugWarn( ...args ) {
 }
 
 // =============================================================================
+// Section 0.5: Accessibility text (per D-07, D-08, D-11, D-12)
+// =============================================================================
+
+const A11Y_MESSAGES = {
+	'nl-NL': {
+		play: 'Afspelen',
+		pause: 'Pauzeren',
+		replay: 'Opnieuw afspelen',
+		started: 'Afspelen gestart',
+		paused: 'Gepauzeerd',
+		finished: 'Afspelen voltooid',
+		speed: 'Snelheid:',
+	},
+	'en-US': {
+		play: 'Play',
+		pause: 'Pause',
+		replay: 'Replay',
+		started: 'Playback started',
+		paused: 'Paused',
+		finished: 'Playback finished',
+		speed: 'Speed:',
+	},
+};
+
+// =============================================================================
 // Section 1: resolveVoice (per D-13, RESEARCH Pattern 3)
 // =============================================================================
 
@@ -165,6 +190,13 @@ class TTSPlayer {
 		this.progressBar = container.querySelector( '.tts-progress' );
 		this.progressFill = container.querySelector( '.tts-progress__fill' );
 
+		// Accessibility (Phase 5)
+		this.srAnnouncement = container.querySelector(
+			'.tts-sr-announcement'
+		);
+		this.a11yText =
+			A11Y_MESSAGES[ this.lang ] || A11Y_MESSAGES[ 'en-US' ];
+
 		// Event listeners
 		this.playBtn.addEventListener( 'click', () => this.togglePlay() );
 		this.speedBtn.addEventListener( 'click', ( e ) => {
@@ -203,6 +235,53 @@ class TTSPlayer {
 		debugLog( 'state:', this.state, '->', newState );
 		this.state = newState;
 		this.container.dataset.ttsState = newState;
+
+		// Update play button aria-label (per D-11)
+		const text = this.a11yText;
+		if ( this.playBtn && text ) {
+			const labelMap = {
+				[ STATES.IDLE ]: text.play,
+				[ STATES.LOADING ]: text.play,
+				[ STATES.PLAYING ]: text.pause,
+				[ STATES.PAUSED ]: text.play,
+				[ STATES.FINISHED ]: text.replay,
+			};
+			if ( labelMap[ newState ] ) {
+				this.playBtn.setAttribute(
+					'aria-label',
+					labelMap[ newState ]
+				);
+			}
+		}
+
+		// Screen reader announcements (per D-07 -- NO progress milestones per D-10)
+		if ( text ) {
+			const announceMap = {
+				[ STATES.PLAYING ]: text.started,
+				[ STATES.PAUSED ]: text.paused,
+				[ STATES.FINISHED ]: text.finished,
+			};
+			if ( announceMap[ newState ] ) {
+				this.announce( announceMap[ newState ] );
+			}
+		}
+	}
+
+	/**
+	 * Announce a message to screen readers via the aria-live region.
+	 * Uses clear-then-set via rAF to ensure re-announcement of same text.
+	 *
+	 * @param {string} message - Message to announce
+	 */
+	announce( message ) {
+		if ( this.srAnnouncement ) {
+			// Clear then set via rAF -- ensures re-announcement of same text (RESEARCH Pitfall 2)
+			this.srAnnouncement.textContent = '';
+			requestAnimationFrame( () => {
+				this.srAnnouncement.textContent = message;
+			} );
+		}
+		debugLog( 'a11y announce:', message );
 	}
 
 	/**
@@ -221,6 +300,9 @@ class TTSPlayer {
 			this.container.querySelector( '.tts-info' ).appendChild( errorEl );
 		}
 		errorEl.textContent = message;
+
+		// Announce error to screen readers (per D-09)
+		this.announce( message );
 	}
 
 	/**
@@ -756,6 +838,13 @@ class TTSPlayer {
 	 */
 	setSpeed( newSpeed ) {
 		debugLog( 'speed changed to:', newSpeed );
+
+		// Announce speed change to screen readers (per D-08)
+		const speedText = this.a11yText;
+		if ( speedText ) {
+			this.announce( speedText.speed + ' ' + formatSpeed( newSpeed ) );
+		}
+
 		this.speed = newSpeed;
 		this.speedIndex = SPEED_STEPS.indexOf( newSpeed );
 		if ( this.speedIndex === -1 ) {
