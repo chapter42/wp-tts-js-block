@@ -137,7 +137,7 @@ Plans:
 Plans:
 - [x] 08-01-PLAN.md — Auto-insert settings page and block template registration in tts-js.php
 - [x] 08-02-PLAN.md — Voice Diagnostics panel in editor sidebar with voice list and Test Voice button
-- [ ] 08-03-PLAN.md — WP.org readiness: output escaping audit, version bumps, readme update, ZIP generation
+- [x] 08-03-PLAN.md — WP.org readiness: output escaping audit, version bumps, readme update, ZIP generation
 
 ## Progress
 
