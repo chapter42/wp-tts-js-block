@@ -1,4 +1,4 @@
-/* global speechSynthesis, SpeechSynthesisUtterance, localStorage, requestAnimationFrame */
+/* global speechSynthesis, SpeechSynthesisUtterance, localStorage, requestAnimationFrame, cancelAnimationFrame */
 
 /**
  * TTS-JS Frontend Player
@@ -764,6 +764,10 @@ class TTSPlayer {
 			this.hasRetried = false;
 			// Update highlight position (per D-12)
 			this.updateHighlight();
+			// Start smooth progress interpolation in sticky mode
+			if ( this.stickyMode ) {
+				this.startProgressInterpolation();
+			}
 		};
 
 		// Chain to next chunk on completion (D-03)
@@ -849,6 +853,12 @@ class TTSPlayer {
 			speechSynthesis.pause();
 		}
 		this.setState( STATES.PAUSED );
+
+		// Cancel progress interpolation on pause
+		if ( this.progressRAF ) {
+			cancelAnimationFrame( this.progressRAF );
+			this.progressRAF = null;
+		}
 
 		// Save position on pause (per D-07)
 		this.savePosition();
@@ -1206,7 +1216,70 @@ class TTSPlayer {
 		if ( this.barSpeedBtn ) {
 			this.barSpeedBtn.addEventListener( 'click', () => this.cycleBarSpeed() );
 		}
-		// Skip buttons wired in Plan 03 (skipByTime)
+		// Skip buttons: 15-second jumps (D-07)
+		if ( this.barSkipBack ) {
+			this.barSkipBack.addEventListener( 'click', () => this.skipByTime( -15 ) );
+		}
+		if ( this.barSkipForward ) {
+			this.barSkipForward.addEventListener( 'click', () => this.skipByTime( 15 ) );
+		}
+
+		// Timeline click-to-seek and drag-to-scrub (D-06)
+		if ( this.barTimeline ) {
+			let isDragging = false;
+
+			const getPercentFromEvent = ( e ) => {
+				const rect = this.barTimeline.getBoundingClientRect();
+				const x = e.clientX - rect.left;
+				return Math.max( 0, Math.min( 100, ( x / rect.width ) * 100 ) );
+			};
+
+			this.barTimeline.addEventListener( 'pointerdown', ( e ) => {
+				e.preventDefault(); // Prevent scroll on mobile (per RESEARCH pitfall 6)
+				isDragging = true;
+				this.barTimeline.setPointerCapture( e.pointerId );
+				// Show visual feedback immediately
+				const percent = getPercentFromEvent( e );
+				this.updateBarTimelineFill( percent );
+				// Cancel interpolation during drag
+				if ( this.progressRAF ) {
+					cancelAnimationFrame( this.progressRAF );
+					this.progressRAF = null;
+				}
+			} );
+
+			this.barTimeline.addEventListener( 'pointermove', ( e ) => {
+				if ( ! isDragging ) return;
+				const percent = getPercentFromEvent( e );
+				this.updateBarTimelineFill( percent );
+				// Update elapsed time preview during drag
+				if ( this.barElapsed && this.totalDurationSecs > 0 ) {
+					const previewTime = ( this.totalDurationSecs * percent ) / ( 100 * this.speed );
+					this.barElapsed.textContent = formatTimestamp( previewTime );
+				}
+			} );
+
+			this.barTimeline.addEventListener( 'pointerup', ( e ) => {
+				if ( ! isDragging ) return;
+				isDragging = false;
+				this.barTimeline.releasePointerCapture( e.pointerId );
+				const percent = getPercentFromEvent( e );
+				this.seekToPercent( percent );
+			} );
+
+			// Keyboard: arrow keys for 5% seek increments
+			this.barTimeline.addEventListener( 'keydown', ( e ) => {
+				if ( e.key === 'ArrowRight' ) {
+					e.preventDefault();
+					const current = parseFloat( this.barTimeline.getAttribute( 'aria-valuenow' ) ) || 0;
+					this.seekToPercent( current + 5 );
+				} else if ( e.key === 'ArrowLeft' ) {
+					e.preventDefault();
+					const current = parseFloat( this.barTimeline.getAttribute( 'aria-valuenow' ) ) || 0;
+					this.seekToPercent( current - 5 );
+				}
+			} );
+		}
 
 		// Keyboard: Escape closes bar
 		this.bar.addEventListener( 'keydown', ( e ) => {
@@ -1342,6 +1415,149 @@ class TTSPlayer {
 		if ( ! this.stickyMode || ! this.barSpeedBtn ) return;
 		this.barSpeedBtn.textContent = formatSpeed( this.speed );
 		this.barSpeedBtn.setAttribute( 'aria-label', 'Afspeelsnelheid: ' + formatSpeed( this.speed ) );
+	}
+
+	/**
+	 * Update the timeline fill width and aria-valuenow.
+	 *
+	 * @param {number} percent - 0 to 100
+	 */
+	updateBarTimelineFill( percent ) {
+		if ( this.barTimelineFill ) {
+			this.barTimelineFill.style.width = Math.max( 0, Math.min( 100, percent ) ) + '%';
+		}
+		// Update slider aria-valuenow
+		if ( this.barTimeline ) {
+			this.barTimeline.setAttribute( 'aria-valuenow', Math.round( percent ) );
+		}
+	}
+
+	/**
+	 * Seek to a percentage position in the article.
+	 * Maps percentage to chunk time, cancels current utterance, jumps to target chunk.
+	 *
+	 * @param {number} percent - 0 to 100
+	 */
+	seekToPercent( percent ) {
+		if ( ! this.chunks || this.chunks.length === 0 ) return;
+
+		const clampedPercent = Math.max( 0, Math.min( 100, percent ) );
+		const targetTime = ( this.totalDurationSecs * clampedPercent ) / 100;
+
+		let targetChunk = 0;
+		for ( let i = 0; i < this.chunkTimes.length; i++ ) {
+			if ( this.chunkTimes[ i ] <= targetTime ) {
+				targetChunk = i;
+			} else {
+				break;
+			}
+		}
+
+		speechSynthesis.cancel();
+		this.currentChunkIndex = targetChunk;
+		this.updateProgress();
+		this.updateBarTimestamps();
+		this.updateBarTimelineFill( clampedPercent );
+
+		if ( this.state === STATES.PLAYING ) {
+			this.playNextChunk();
+		}
+
+		debugLog( 'Seeked to', clampedPercent + '%', 'chunk', targetChunk );
+	}
+
+	/**
+	 * Skip forward or backward by a number of seconds.
+	 * Maps time offset to nearest chunk boundary.
+	 *
+	 * @param {number} deltaSecs - Positive for forward, negative for backward
+	 */
+	skipByTime( deltaSecs ) {
+		if ( ! this.chunks || this.chunks.length === 0 ) return;
+
+		// Current elapsed time at current speed
+		const currentTimeAtSpeed = ( this.chunkTimes[ this.currentChunkIndex ] || 0 ) / this.speed;
+		const targetTimeAtSpeed = Math.max( 0, currentTimeAtSpeed + deltaSecs );
+		// Convert back to 1x-speed time for chunk lookup
+		const targetTimeRaw = targetTimeAtSpeed * this.speed;
+
+		let targetChunk = 0;
+		for ( let i = 0; i < this.chunkTimes.length; i++ ) {
+			if ( this.chunkTimes[ i ] <= targetTimeRaw ) {
+				targetChunk = i;
+			} else {
+				break;
+			}
+		}
+
+		// Clamp to valid range
+		targetChunk = Math.max( 0, Math.min( targetChunk, this.chunks.length - 1 ) );
+
+		speechSynthesis.cancel();
+		this.currentChunkIndex = targetChunk;
+		this.updateProgress();
+		this.updateBarTimestamps();
+
+		// Update timeline fill
+		const percent = this.totalDurationSecs > 0
+			? ( this.chunkTimes[ targetChunk ] / this.totalDurationSecs ) * 100
+			: 0;
+		this.updateBarTimelineFill( percent );
+
+		if ( this.state === STATES.PLAYING ) {
+			this.playNextChunk();
+		}
+
+		debugLog( 'Skipped by', deltaSecs, 'secs to chunk', targetChunk );
+	}
+
+	/**
+	 * Smoothly animate progress bar and elapsed time between chunk boundaries.
+	 * Uses requestAnimationFrame for GPU-efficient animation.
+	 * Called at the start of each chunk; cancelled on pause/stop/seek.
+	 */
+	startProgressInterpolation() {
+		if ( this.progressRAF ) {
+			cancelAnimationFrame( this.progressRAF );
+		}
+		if ( ! this.stickyMode || ! this.barTimelineFill ) return;
+
+		const startPercent = this.totalDurationSecs > 0
+			? ( this.chunkTimes[ this.currentChunkIndex ] / this.totalDurationSecs ) * 100
+			: 0;
+		const endChunkIdx = Math.min( this.currentChunkIndex + 1, this.chunks.length );
+		const endPercent = endChunkIdx < this.chunks.length
+			? ( this.chunkTimes[ endChunkIdx ] / this.totalDurationSecs ) * 100
+			: 100;
+
+		const chunkText = this.chunks[ this.currentChunkIndex ];
+		const chunkWords = chunkText.split( /\s+/ ).filter( ( w ) => w.length > 0 ).length;
+		const chunkDurationMs = ( chunkWords / WORDS_PER_MINUTE ) * 60000 / this.speed;
+		const startTime = performance.now();
+		const chunkStartTimeSecs = ( this.chunkTimes[ this.currentChunkIndex ] || 0 ) / this.speed;
+
+		const animate = ( now ) => {
+			const elapsed = now - startTime;
+			const t = Math.min( elapsed / chunkDurationMs, 1 );
+			const currentPercent = startPercent + ( endPercent - startPercent ) * t;
+
+			this.barTimelineFill.style.width = currentPercent + '%';
+			if ( this.barTimeline ) {
+				this.barTimeline.setAttribute( 'aria-valuenow', Math.round( currentPercent ) );
+			}
+
+			// Update elapsed timestamp smoothly
+			if ( this.barElapsed ) {
+				const elapsedSecs = chunkStartTimeSecs + ( t * chunkDurationMs / 1000 );
+				this.barElapsed.textContent = formatTimestamp( elapsedSecs );
+			}
+
+			if ( t < 1 && this.state === STATES.PLAYING && this.stickyMode ) {
+				this.progressRAF = requestAnimationFrame( animate );
+			}
+		};
+
+		this.progressRAF = requestAnimationFrame( animate );
 	}
 
 	/**
