@@ -214,3 +214,39 @@ export function formatDuration( minutes, isPlaying ) {
 export function formatSpeed( speed ) {
 	return Number.isInteger( speed ) ? `${ speed }x` : `${ speed }x`;
 }
+
+// =============================================================================
+// Timestamp helper functions (Phase 9 -- sticky bar time display)
+// =============================================================================
+
+/**
+ * Format seconds as m:ss timestamp (e.g., 62 -> "1:02", 0 -> "0:00").
+ *
+ * @param {number} seconds - Time in seconds (will be floored)
+ * @return {string} Formatted timestamp
+ */
+export function formatTimestamp( seconds ) {
+	const totalSecs = Math.max( 0, Math.floor( seconds ) );
+	const mins = Math.floor( totalSecs / 60 );
+	const secs = totalSecs % 60;
+	return mins + ':' + String( secs ).padStart( 2, '0' );
+}
+
+/**
+ * Build cumulative start-time array for chunks at 1x speed.
+ * Each entry is the time offset (in seconds) where that chunk begins.
+ * Uses WORDS_PER_MINUTE to estimate chunk duration from word count.
+ *
+ * @param {string[]} chunks - Array of text chunks
+ * @return {{ chunkTimes: number[], totalDuration: number }}
+ */
+export function buildChunkTimes( chunks ) {
+	const chunkTimes = [];
+	let cumulative = 0;
+	for ( const chunk of chunks ) {
+		chunkTimes.push( cumulative );
+		const words = chunk.split( /\s+/ ).filter( ( w ) => w.length > 0 ).length;
+		cumulative += ( words / WORDS_PER_MINUTE ) * 60;
+	}
+	return { chunkTimes, totalDuration: cumulative };
+}
