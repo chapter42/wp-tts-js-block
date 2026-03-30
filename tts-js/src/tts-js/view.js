@@ -29,6 +29,8 @@ import {
 	estimateDuration,
 	formatDuration,
 	formatSpeed,
+	formatTimestamp,
+	buildChunkTimes,
 } from './utils';
 
 // =============================================================================
@@ -281,6 +283,29 @@ class TTSPlayer {
 		this.skipBackBtn = container.querySelector( '.tts-skip-btn--back' );
 		this.skipForwardBtn = container.querySelector( '.tts-skip-btn--forward' );
 
+		// Label element (inline block label text)
+		this.label = container.querySelector( '.tts-label' );
+		this._originalLabel = this.label ? this.label.textContent : 'Luister naar artikel';
+
+		// Sticky bar mode (Phase 9)
+		this.stickyEnabled = this.container.dataset.ttsSticky === 'true';
+		this.stickyMode = false; // active when bar is showing
+		this.bar = null; // lazily queried
+		this.barPlayBtn = null;
+		this.barSkipBack = null;
+		this.barSkipForward = null;
+		this.barElapsed = null;
+		this.barTotal = null;
+		this.barTimelineFill = null;
+		this.barTimeline = null;
+		this.barSpeedBtn = null;
+		this.barVoice = null;
+		this.barTitle = null;
+		this.barClose = null;
+		this.chunkTimes = [];
+		this.totalDurationSecs = 0;
+		this.progressRAF = null;
+
 		// Event listeners
 		this.playBtn.addEventListener( 'click', () => this.togglePlay() );
 
@@ -384,6 +409,12 @@ class TTSPlayer {
 		debugLog( 'state:', this.state, '->', newState );
 		this.state = newState;
 		this.container.dataset.ttsState = newState;
+
+		// Sticky mode: keep inline block in collapsed state, update bar state
+		if ( this.stickyMode ) {
+			this.container.dataset.ttsState = 'sticky-active';
+			this.updateBarState();
+		}
 
 		// Update play button aria-label (per D-11)
 		const text = this.a11yText;
@@ -627,6 +658,11 @@ class TTSPlayer {
 						this.chunks.length
 				)
 			);
+
+			// Build chunk time offsets for sticky bar timestamps
+			const timeData = buildChunkTimes( this.chunks );
+			this.chunkTimes = timeData.chunkTimes;
+			this.totalDurationSecs = timeData.totalDuration;
 		}
 
 		// Reset chunk position
@@ -650,10 +686,19 @@ class TTSPlayer {
 				}
 				this.resolvedVoice = voice;
 			}
+			// Update bar voice name when voice is resolved
+			if ( this.stickyMode && this.barVoice && this.resolvedVoice ) {
+				this.barVoice.textContent = this.resolvedVoice.name;
+			}
 		}
 
 		// Clear any pending speech before starting fresh
 		speechSynthesis.cancel();
+
+		// Activate sticky bar if enabled (D-01)
+		if ( this.stickyEnabled && ! this.stickyMode ) {
+			this.activateStickyBar();
+		}
 
 		// Start chunk playback
 		this.playNextChunk();
@@ -726,6 +771,7 @@ class TTSPlayer {
 			this.currentChunkIndex++;
 			this.updateProgress();
 			this.updateRemainingTime();
+			this.updateBarTimestamps();
 			this.playNextChunk();
 		};
 
@@ -1117,6 +1163,222 @@ class TTSPlayer {
 		debugLog( 'highlight: spans removed' );
 	}
 
+	// =========================================================================
+	// Sticky bar methods (Phase 9)
+	// =========================================================================
+
+	/**
+	 * Initialize sticky bar DOM references. Called lazily on first play
+	 * when sticky is enabled. If .tts-bar is not found, disables sticky.
+	 */
+	initStickyBar() {
+		this.bar = document.querySelector( '.tts-bar' );
+		if ( ! this.bar ) {
+			this.stickyEnabled = false;
+			return;
+		}
+		// Cache bar DOM refs
+		this.barPlayBtn = this.bar.querySelector( '.tts-bar__play' );
+		this.barSkipBack = this.bar.querySelector( '.tts-bar__skip--back' );
+		this.barSkipForward = this.bar.querySelector( '.tts-bar__skip--forward' );
+		this.barElapsed = this.bar.querySelector( '.tts-bar__elapsed' );
+		this.barTotal = this.bar.querySelector( '.tts-bar__total' );
+		this.barTimelineFill = this.bar.querySelector( '.tts-bar__timeline-fill' );
+		this.barTimeline = this.bar.querySelector( '.tts-bar__timeline' );
+		this.barSpeedBtn = this.bar.querySelector( '.tts-bar__speed' );
+		this.barVoice = this.bar.querySelector( '.tts-bar__voice' );
+		this.barTitle = this.bar.querySelector( '.tts-bar__title' );
+		this.barClose = this.bar.querySelector( '.tts-bar__close' );
+
+		// Set article title (from data-tts-title on container)
+		const title = this.container.dataset.ttsTitle || '';
+		if ( this.barTitle ) {
+			this.barTitle.textContent = title;
+		}
+
+		// Wire bar control events
+		if ( this.barPlayBtn ) {
+			this.barPlayBtn.addEventListener( 'click', () => this.togglePlay() );
+		}
+		if ( this.barClose ) {
+			this.barClose.addEventListener( 'click', () => this.dismissStickyBar() );
+		}
+		if ( this.barSpeedBtn ) {
+			this.barSpeedBtn.addEventListener( 'click', () => this.cycleBarSpeed() );
+		}
+		// Skip buttons wired in Plan 03 (skipByTime)
+
+		// Keyboard: Escape closes bar
+		this.bar.addEventListener( 'keydown', ( e ) => {
+			if ( e.key === 'Escape' ) {
+				this.dismissStickyBar();
+			}
+		} );
+	}
+
+	/**
+	 * Activate the sticky bottom bar. Called when playback starts (D-01).
+	 * Shows the bar, collapses inline block, updates bar info.
+	 */
+	activateStickyBar() {
+		if ( ! this.stickyEnabled ) return;
+		if ( ! this.bar ) {
+			this.initStickyBar();
+		}
+		if ( ! this.bar ) return;
+
+		this.stickyMode = true;
+
+		// Show bar with animation
+		this.bar.dataset.ttsBar = 'animating-in';
+		// After transition, set to visible
+		const onTransitionEnd = () => {
+			this.bar.dataset.ttsBar = 'visible';
+			this.bar.removeEventListener( 'transitionend', onTransitionEnd );
+		};
+		this.bar.addEventListener( 'transitionend', onTransitionEnd );
+
+		// Content occlusion prevention
+		document.body.classList.add( 'tts-bar-active' );
+
+		// Collapse inline block (per D-02)
+		this.container.dataset.ttsState = 'sticky-active';
+		if ( this.label ) {
+			this.label.textContent = 'Wordt voorgelezen...';
+		}
+
+		// Make collapsed inline block clickable to focus bar
+		this.container.style.cursor = 'pointer';
+		this._inlineClickHandler = () => {
+			if ( this.bar ) {
+				this.bar.scrollIntoView( { behavior: 'smooth', block: 'end' } );
+				if ( this.barPlayBtn ) this.barPlayBtn.focus();
+			}
+		};
+		this.container.addEventListener( 'click', this._inlineClickHandler );
+
+		// Update bar info
+		this.updateBarState();
+		this.updateBarTimestamps();
+		if ( this.barVoice && this.resolvedVoice ) {
+			this.barVoice.textContent = this.resolvedVoice.name;
+		}
+		this.updateBarSpeed();
+
+		// Screen reader announcement
+		this.announce( 'Audio speler geopend' );
+		debugLog( 'Sticky bar activated' );
+	}
+
+	/**
+	 * Dismiss the sticky bottom bar (D-03). Stops playback, animates
+	 * bar out, restores inline block to idle state.
+	 */
+	dismissStickyBar() {
+		if ( ! this.stickyMode || ! this.bar ) return;
+
+		// Stop playback
+		speechSynthesis.cancel();
+
+		// Animate bar out
+		this.bar.dataset.ttsBar = 'animating-out';
+		const onTransitionEnd = () => {
+			this.bar.dataset.ttsBar = 'hidden';
+			this.bar.removeEventListener( 'transitionend', onTransitionEnd );
+		};
+		this.bar.addEventListener( 'transitionend', onTransitionEnd );
+
+		// Remove content occlusion
+		document.body.classList.remove( 'tts-bar-active' );
+
+		// Restore inline block
+		this.stickyMode = false;
+		this.container.dataset.ttsState = STATES.IDLE;
+		if ( this.label && this._originalLabel ) {
+			this.label.textContent = this._originalLabel;
+		}
+		this.container.style.cursor = '';
+		if ( this._inlineClickHandler ) {
+			this.container.removeEventListener( 'click', this._inlineClickHandler );
+			this._inlineClickHandler = null;
+		}
+
+		// Cancel progress animation
+		if ( this.progressRAF ) {
+			cancelAnimationFrame( this.progressRAF );
+			this.progressRAF = null;
+		}
+
+		// Reset state
+		this.currentChunkIndex = 0;
+		this.setState( STATES.IDLE );
+
+		this.announce( 'Audio speler gesloten' );
+		debugLog( 'Sticky bar dismissed' );
+	}
+
+	/**
+	 * Sync bar play/pause icon state with player state.
+	 */
+	updateBarState() {
+		if ( ! this.stickyMode || ! this.bar ) return;
+		this.bar.dataset.ttsBarState = this.state;
+	}
+
+	/**
+	 * Update elapsed and total timestamps in the bar.
+	 */
+	updateBarTimestamps() {
+		if ( ! this.stickyMode || ! this.barElapsed || ! this.barTotal ) return;
+		const elapsed = this.chunkTimes[ this.currentChunkIndex ] || 0;
+		this.barElapsed.textContent = formatTimestamp( elapsed / this.speed );
+		this.barTotal.textContent = formatTimestamp( this.totalDurationSecs / this.speed );
+	}
+
+	/**
+	 * Update speed display in the bar.
+	 */
+	updateBarSpeed() {
+		if ( ! this.stickyMode || ! this.barSpeedBtn ) return;
+		this.barSpeedBtn.textContent = formatSpeed( this.speed );
+		this.barSpeedBtn.setAttribute( 'aria-label', 'Afspeelsnelheid: ' + formatSpeed( this.speed ) );
+	}
+
+	/**
+	 * Cycle speed in the bar through SPEED_STEPS (same as inline speed menu).
+	 */
+	cycleBarSpeed() {
+		const currentIdx = SPEED_STEPS.indexOf( this.speed );
+		const nextIdx = ( currentIdx + 1 ) % SPEED_STEPS.length;
+		this.speed = SPEED_STEPS[ nextIdx ];
+		this.speedIndex = nextIdx;
+
+		// Update inline speed button too
+		this.speedBtn.textContent = formatSpeed( this.speed );
+		this.speedBtn.setAttribute( 'aria-label', 'Afspeelsnelheid: ' + formatSpeed( this.speed ) );
+
+		// Update active state in inline menu
+		if ( this.speedMenu ) {
+			this.speedMenu.querySelectorAll( 'li' ).forEach( ( li ) => {
+				const isActive = parseFloat( li.dataset.speed ) === this.speed;
+				li.classList.toggle( 'tts-speed-menu__active', isActive );
+				li.setAttribute( 'aria-selected', isActive ? 'true' : 'false' );
+			} );
+		}
+
+		this.updateBarSpeed();
+		this.updateBarTimestamps();
+		this.updateDuration();
+
+		// Instant speed switch: if playing, restart current chunk at new rate
+		if ( this.state === STATES.PLAYING && this.currentUtterance ) {
+			speechSynthesis.cancel();
+			setTimeout( () => this.playNextChunk(), 50 );
+		}
+
+		debugLog( 'Bar speed changed to', this.speed );
+	}
+
 	/**
 	 * Stop playback completely and reset to idle state.
 	 */
@@ -1259,19 +1521,25 @@ class TTSPlayer {
 			this.progressBar.setAttribute( 'aria-valuenow', '100' );
 		}
 
-		// Reset to idle after 3 seconds
-		setTimeout( () => {
-			if ( this.state === STATES.FINISHED ) {
-				if ( this.progressFill ) {
-					this.progressFill.style.width = '0%';
+		// Update bar timestamps to show full duration
+		this.updateBarTimestamps();
+
+		// D-04: In sticky mode, bar stays visible (no auto-close on finish).
+		// Only auto-reset inline player to idle after 3 seconds.
+		if ( ! this.stickyMode ) {
+			setTimeout( () => {
+				if ( this.state === STATES.FINISHED ) {
+					if ( this.progressFill ) {
+						this.progressFill.style.width = '0%';
+					}
+					if ( this.progressBar ) {
+						this.progressBar.setAttribute( 'aria-valuenow', '0' );
+					}
+					this.updateDuration();
+					this.setState( STATES.IDLE );
 				}
-				if ( this.progressBar ) {
-					this.progressBar.setAttribute( 'aria-valuenow', '0' );
-				}
-				this.updateDuration();
-				this.setState( STATES.IDLE );
-			}
-		}, 3000 );
+			}, 3000 );
+		}
 	}
 
 	/**
@@ -1451,6 +1719,12 @@ class TTSPlayer {
 		}
 
 		this.updateDuration();
+
+		// Sync bar speed and timestamps when in sticky mode
+		if ( this.stickyMode ) {
+			this.updateBarSpeed();
+			this.updateBarTimestamps();
+		}
 	}
 
 	/**
@@ -1587,6 +1861,11 @@ class TTSPlayer {
 		// Split text into chunks if not done
 		if ( ! this.chunks.length ) {
 			this.chunks = splitIntoChunks( this.text );
+
+			// Build chunk time offsets for sticky bar timestamps
+			const timeData = buildChunkTimes( this.chunks );
+			this.chunkTimes = timeData.chunkTimes;
+			this.totalDurationSecs = timeData.totalDuration;
 		}
 
 		// Resolve voice if needed
@@ -1609,6 +1888,12 @@ class TTSPlayer {
 		this.updateRemainingTime();
 
 		speechSynthesis.cancel();
+
+		// Activate sticky bar if enabled (D-01)
+		if ( this.stickyEnabled && ! this.stickyMode ) {
+			this.activateStickyBar();
+		}
+
 		this.playNextChunk();
 
 		// Inject highlight spans (per D-11)
