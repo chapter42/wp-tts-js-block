@@ -9,6 +9,9 @@ Thumbs.db
 *.gif
 *.webloc
 
+# Exception: WP.org listing assets (must be tracked)
+!tts-js/assets/*.png
+
 # Claude Code workspace
 .claude/
 
