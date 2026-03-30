@@ -33,6 +33,12 @@ function tts_js_register_settings() {
 		'default'           => false,
 		'sanitize_callback' => 'rest_sanitize_boolean',
 	) );
+
+	register_setting( 'tts_js_settings', 'tts_js_sticky_player', array(
+		'type'              => 'boolean',
+		'default'           => false,
+		'sanitize_callback' => 'rest_sanitize_boolean',
+	) );
 }
 add_action( 'admin_init', 'tts_js_register_settings' );
 
@@ -78,6 +84,21 @@ function tts_js_render_settings_page() {
 						</p>
 					</td>
 				</tr>
+				<tr>
+					<th scope="row">
+						<?php esc_html_e( 'Sticky player', 'tts-js' ); ?>
+					</th>
+					<td>
+						<label>
+							<input type="checkbox" name="tts_js_sticky_player" value="1"
+								<?php checked( get_option( 'tts_js_sticky_player', false ) ); ?> />
+							<?php esc_html_e( 'Gebruik sticky bottom player', 'tts-js' ); ?>
+						</label>
+						<p class="description">
+							<?php esc_html_e( 'Toont een vaste balk onderaan de pagina tijdens het afspelen', 'tts-js' ); ?>
+						</p>
+					</td>
+				</tr>
 			</table>
 			<?php submit_button(); ?>
 		</form>
@@ -106,3 +127,26 @@ function tts_js_register_post_template() {
 	}
 }
 add_action( 'init', 'tts_js_register_post_template' );
+
+/**
+ * Inject viewport-fit=cover for iOS safe-area insets (per D-14).
+ *
+ * Only when sticky player is enabled. Uses JS to non-destructively
+ * add viewport-fit=cover to the existing viewport meta tag.
+ */
+function tts_js_add_viewport_fit() {
+	if ( ! get_option( 'tts_js_sticky_player', false ) ) {
+		return;
+	}
+	?>
+	<script>
+	(function() {
+		var meta = document.querySelector('meta[name="viewport"]');
+		if (meta && meta.content.indexOf('viewport-fit') === -1) {
+			meta.content += ', viewport-fit=cover';
+		}
+	})();
+	</script>
+	<?php
+}
+add_action( 'wp_head', 'tts_js_add_viewport_fit', 1 );

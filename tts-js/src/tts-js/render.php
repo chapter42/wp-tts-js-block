@@ -94,6 +94,8 @@ $wrapper_attributes = get_block_wrapper_attributes( [
 	'data-tts-words'    => $word_count,
 	'data-tts-errors'   => wp_json_encode( $msgs ),
 	'data-tts-highlight' => ( $attributes['enableHighlighting'] ?? true ) ? 'true' : 'false',
+	'data-tts-title'    => esc_attr( $title ),
+	'data-tts-sticky'   => get_option( 'tts_js_sticky_player', false ) ? 'true' : 'false',
 ] );
 
 // SVG icons (20x20 viewBox, currentColor fill -- per UI-SPEC)
@@ -106,6 +108,11 @@ $icon_error   = '<svg class="tts-icon tts-icon--error" width="20" height="20" vi
 $icon_skip_back = '<svg class="tts-icon tts-icon--skip-back" width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><polygon points="10,4 2,10 10,16"/><polygon points="18,4 10,10 18,16"/></svg>';
 $icon_skip_forward = '<svg class="tts-icon tts-icon--skip-forward" width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><polygon points="2,4 10,10 2,16"/><polygon points="10,4 18,10 10,16"/></svg>';
 
+// Bar-specific SVG icons (20x20 viewBox, currentColor, aria-hidden)
+$icon_skip_back_15    = '<svg class="tts-icon tts-icon--skip-back-15" width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M10 3V1L6 4l4 3V5c3.87 0 7 3.13 7 7s-3.13 7-7 7-7-3.13-7-7h-2c0 4.97 4.03 9 9 9s9-4.03 9-9-4.03-9-9-9z"/><text x="7" y="14" font-size="7" font-weight="bold" font-family="inherit">15</text></svg>';
+$icon_skip_forward_15 = '<svg class="tts-icon tts-icon--skip-forward-15" width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M10 3V1l4 3-4 3V5C6.13 5 3 8.13 3 12s3.13 7 7 7 7-3.13 7-7h2c0 4.97-4.03 9-9 9S1 16.97 1 12s4.03-9 9-9z"/><text x="7" y="14" font-size="7" font-weight="bold" font-family="inherit">15</text></svg>';
+$icon_close           = '<svg class="tts-icon tts-icon--close" width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="5" y1="5" x2="15" y2="15"/><line x1="15" y1="5" x2="5" y2="15"/></svg>';
+
 // Allowed SVG tags and attributes for wp_kses() escaping (PCP compliance).
 $allowed_svg = array(
 	'svg'      => array( 'class' => true, 'width' => true, 'height' => true, 'viewBox' => true, 'fill' => true, 'aria-hidden' => true, 'stroke' => true, 'stroke-width' => true, 'stroke-linecap' => true ),
@@ -115,6 +122,7 @@ $allowed_svg = array(
 	'circle'   => array( 'cx' => true, 'cy' => true, 'r' => true, 'fill' => true ),
 	'line'     => array( 'x1' => true, 'y1' => true, 'x2' => true, 'y2' => true ),
 	'path'     => array( 'd' => true, 'stroke-linecap' => true ),
+	'text'     => array( 'x' => true, 'y' => true, 'font-size' => true, 'font-weight' => true, 'font-family' => true ),
 );
 ?>
 <div <?php echo $wrapper_attributes; ?>>
@@ -155,3 +163,49 @@ $allowed_svg = array(
 		</ul>
 	</div>
 </div>
+<?php
+if ( get_option( 'tts_js_sticky_player', false ) ) :
+	static $bar_rendered = false;
+	if ( ! $bar_rendered ) :
+		$bar_rendered = true;
+?>
+<div class="tts-bar" data-tts-bar="hidden" role="region"
+     aria-label="<?php esc_attr_e( 'Audio speler', 'tts-js' ); ?>">
+	<span class="tts-bar__title"></span>
+	<button type="button" class="tts-bar__skip tts-bar__skip--back"
+	        aria-label="<?php esc_attr_e( '15 seconden terug', 'tts-js' ); ?>">
+		<?php echo wp_kses( $icon_skip_back_15, $allowed_svg ); ?>
+	</button>
+	<button type="button" class="tts-bar__play"
+	        aria-label="<?php esc_attr_e( 'Artikel afspelen', 'tts-js' ); ?>">
+		<?php echo wp_kses( $icon_play, $allowed_svg ); ?>
+		<?php echo wp_kses( $icon_pause, $allowed_svg ); ?>
+		<?php echo wp_kses( $icon_spinner, $allowed_svg ); ?>
+		<?php echo wp_kses( $icon_check, $allowed_svg ); ?>
+		<?php echo wp_kses( $icon_error, $allowed_svg ); ?>
+	</button>
+	<button type="button" class="tts-bar__skip tts-bar__skip--forward"
+	        aria-label="<?php esc_attr_e( '15 seconden vooruit', 'tts-js' ); ?>">
+		<?php echo wp_kses( $icon_skip_forward_15, $allowed_svg ); ?>
+	</button>
+	<span class="tts-bar__elapsed">0:00</span>
+	<div class="tts-bar__timeline" role="slider"
+	     aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"
+	     aria-label="<?php esc_attr_e( 'Voortgang zoeken', 'tts-js' ); ?>"
+	     tabindex="0">
+		<div class="tts-bar__timeline-fill"></div>
+	</div>
+	<span class="tts-bar__total">0:00</span>
+	<div class="tts-bar__speed-wrap">
+		<button type="button" class="tts-bar__speed" aria-label="Afspeelsnelheid: 1x">1x</button>
+	</div>
+	<span class="tts-bar__voice"></span>
+	<button type="button" class="tts-bar__close"
+	        aria-label="<?php esc_attr_e( 'Speler sluiten', 'tts-js' ); ?>">
+		<?php echo wp_kses( $icon_close, $allowed_svg ); ?>
+	</button>
+</div>
+<?php
+	endif;
+endif;
+?>
