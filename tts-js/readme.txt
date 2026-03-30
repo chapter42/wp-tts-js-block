@@ -2,7 +2,7 @@
 Contributors:      royhuiskes
 Tags:              text-to-speech, tts, gutenberg, block, accessibility, speech
 Tested up to:      6.8
-Stable tag:        1.0.0
+Stable tag:        1.1.0
 Requires at least: 6.5
 Requires PHP:      7.4
 License:           GPL-2.0-or-later
@@ -26,6 +26,14 @@ TTS JS voegt een compacte text-to-speech player toe aan je WordPress artikelen a
 * Cross-browser: Chrome, Safari, Firefox, Edge (desktop + mobiel)
 * Foutafhandeling met lokale foutmeldingen (NL/EN)
 * Privacy-friendly — geen data verlaat de browser
+* Toets snel vooruit/achteruit per zin (skip controls)
+* Onthoud afspeelpositie bij pagina herladen (position memory)
+* Markering van de huidige zin tijdens afspelen (highlighting)
+* Automatisch TTS player toevoegen aan nieuwe berichten (auto-insert)
+* Stemdiagnostiek in de editor sidebar (voice diagnostics)
+* Thema-kleuren overerving via WordPress theme.json
+* Volledige toetsenbordnavigatie en screenreader ondersteuning
+* Dynamische taalselectie op basis van beschikbare browser stemmen
 
 **Taal:** Primair Nederlands, maar werkt met elke taal die je browser ondersteunt.
 
@@ -56,6 +64,21 @@ Ja, via de block sidebar kun je de taal instellen (standaard: nl-NL). De plugin 
 De plugin splitst lange teksten op in zinnen en speelt ze achter elkaar af. Dit omzeilt een bekende Chrome-bug waarbij spraak na ~15 seconden stopt.
 
 == Changelog ==
+
+= 1.1.0 =
+* Skip vooruit/achteruit knoppen voor zin-navigatie
+* Afspeelpositie onthouden via localStorage (7 dagen)
+* Zinmarkering met auto-scroll tijdens afspelen
+* Automatisch TTS player toevoegen aan nieuwe posts (instelbaar via Settings)
+* Stemdiagnostiek panel in de editor sidebar met test-functie
+* WordPress thema-kleuren via CSS custom properties en theme.json
+* Volledige toetsenbordnavigatie (Tab, Enter, Space, Escape, pijltjestoetsen)
+* ARIA labels, live regions en screenreader aankondigingen
+* Dynamische taalselectie dropdown (10-taal fallback)
+* Focus-indicatoren en reduced-motion ondersteuning
+* Output escaping audit voor WordPress.org compliance
+* Unit tests voor core functies (Jest)
+* ESLint/Stylelint configuratie met husky pre-commit hooks
 
 = 1.0.0 =
 * Gutenberg block met "Luister naar artikel" player
