@@ -158,7 +158,7 @@ Plans:
 Plans:
 - [x] 09-01-PLAN.md — Settings toggle, bar HTML rendering with SVG icons, bar CSS with animations and responsive
 - [x] 09-02-PLAN.md — Time utilities, TTSPlayer sticky mode, trigger/dismiss flows, bar control sync
-- [ ] 09-03-PLAN.md — Timeline seeking, 15-second skip, progress interpolation, keyboard accessibility
+- [x] 09-03-PLAN.md — Timeline seeking, 15-second skip, progress interpolation, keyboard accessibility
 
 ## Progress
 
