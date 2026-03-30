@@ -481,3 +481,361 @@
 		height: 16px;
 	}
 }
+
+/* ---- STICKY BOTTOM BAR (Phase 9) ---- */
+
+/* Bar container -- fixed to bottom, slides up via transform */
+.tts-bar {
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	z-index: 99999;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	height: 56px;
+	padding: 8px 24px;
+	padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+	background: var(--tts-light, #f0f0f0);
+	border-top: 1px solid color-mix(in srgb, var(--tts-dark, #333333) 15%, transparent);
+	box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.08);
+	font-family: inherit;
+	box-sizing: border-box;
+	transform: translateY(100%);
+	transition: transform 300ms ease-out;
+	will-change: transform;
+}
+
+/* Bar visibility states (data-tts-bar attribute) */
+.tts-bar[data-tts-bar="hidden"] {
+	display: none;
+}
+
+.tts-bar[data-tts-bar="visible"],
+.tts-bar[data-tts-bar="animating-in"] {
+	display: flex;
+	transform: translateY(0);
+}
+
+.tts-bar[data-tts-bar="animating-out"] {
+	display: flex;
+	transform: translateY(100%);
+	transition-duration: 200ms;
+	transition-timing-function: ease-in;
+}
+
+/* Content occlusion prevention */
+body.tts-bar-active {
+	padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px)) !important;
+}
+
+/* Bar title */
+.tts-bar__title {
+	font-size: 14px;
+	font-weight: 600;
+	line-height: 1.4;
+	color: var(--tts-dark, #333333);
+	max-width: 200px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	flex-shrink: 0;
+}
+
+/* Bar play button -- accent circle */
+.tts-bar__play {
+	width: 36px;
+	height: 36px;
+	min-width: 36px;
+	border: none;
+	background: var(--tts-primary, #666666);
+	color: #fff;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	padding: 0;
+	border-radius: 50%;
+}
+
+.tts-bar__play:hover {
+	background: var(--tts-dark, #333333);
+}
+
+.tts-bar__play:active {
+	transform: scale(0.95);
+}
+
+/* Bar icon state machine (data-tts-bar-state) */
+/* All icons hidden by default */
+.tts-bar__play .tts-icon {
+	display: none;
+}
+
+/* Show play icon when idle/paused */
+.tts-bar[data-tts-bar-state="idle"] .tts-bar__play .tts-icon--play,
+.tts-bar[data-tts-bar-state="paused"] .tts-bar__play .tts-icon--play {
+	display: block;
+}
+
+/* Show pause when playing */
+.tts-bar[data-tts-bar-state="playing"] .tts-bar__play .tts-icon--pause {
+	display: block;
+}
+
+/* Show spinner when loading */
+.tts-bar[data-tts-bar-state="loading"] .tts-bar__play .tts-icon--spinner {
+	display: block;
+}
+
+/* Show check when finished */
+.tts-bar[data-tts-bar-state="finished"] .tts-bar__play .tts-icon--check {
+	display: block;
+}
+
+/* Show error icon when error */
+.tts-bar[data-tts-bar-state="error"] .tts-bar__play .tts-icon--error {
+	display: block;
+}
+
+/* Skip button visibility -- hide when finished/error */
+.tts-bar[data-tts-bar-state="finished"] .tts-bar__skip,
+.tts-bar[data-tts-bar-state="error"] .tts-bar__skip {
+	display: none;
+}
+
+.tts-bar[data-tts-bar-state="error"] .tts-bar__timeline {
+	display: none;
+}
+
+.tts-bar[data-tts-bar-state="error"] .tts-bar__elapsed,
+.tts-bar[data-tts-bar-state="error"] .tts-bar__total {
+	display: none;
+}
+
+/* Bar skip buttons */
+.tts-bar__skip {
+	width: 32px;
+	height: 32px;
+	min-width: 32px;
+	border: none;
+	background: transparent;
+	color: var(--tts-dark, #333333);
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	padding: 0;
+	border-radius: 50%;
+}
+
+.tts-bar__skip:hover {
+	background: var(--tts-btn-hover, color-mix(in srgb, #333333 8%, transparent));
+}
+
+.tts-bar__skip:active {
+	transform: scale(0.95);
+}
+
+/* Bar timeline */
+.tts-bar__timeline {
+	flex: 1;
+	height: 4px;
+	background: var(--tts-progress-track, color-mix(in srgb, #333333 15%, transparent));
+	border-radius: 2px;
+	cursor: pointer;
+	position: relative;
+	touch-action: none;
+}
+
+.tts-bar__timeline-fill {
+	height: 100%;
+	width: 0%;
+	background: var(--tts-progress-fill, var(--tts-primary, #666666));
+	border-radius: 2px;
+	transition: width 300ms ease;
+}
+
+/* Timestamps */
+.tts-bar__elapsed,
+.tts-bar__total {
+	font-size: 12px;
+	font-weight: 400;
+	line-height: 1;
+	color: var(--tts-dark, #333333);
+	flex-shrink: 0;
+	min-width: 32px;
+}
+
+/* Bar speed button */
+.tts-bar__speed-wrap {
+	position: relative;
+	flex-shrink: 0;
+}
+
+.tts-bar__speed {
+	min-width: 40px;
+	height: 28px;
+	padding: 0 6px;
+	background: transparent;
+	border: none;
+	border-radius: 4px;
+	font-size: 14px;
+	font-weight: 600;
+	line-height: 1;
+	color: var(--tts-dark, #333333);
+	cursor: pointer;
+}
+
+.tts-bar__speed:hover {
+	background: var(--tts-btn-hover, color-mix(in srgb, #333333 8%, transparent));
+}
+
+/* Voice name */
+.tts-bar__voice {
+	font-size: 12px;
+	font-weight: 400;
+	color: color-mix(in srgb, var(--tts-dark, #333333) 60%, transparent);
+	max-width: 120px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	flex-shrink: 0;
+}
+
+/* Close button */
+.tts-bar__close {
+	width: 32px;
+	height: 32px;
+	min-width: 32px;
+	border: none;
+	background: transparent;
+	color: var(--tts-dark, #333333);
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	padding: 0;
+	border-radius: 50%;
+}
+
+.tts-bar__close:hover {
+	background: var(--tts-btn-hover, color-mix(in srgb, #333333 8%, transparent));
+}
+
+.tts-bar__close:active {
+	transform: scale(0.95);
+}
+
+/* Focus indicators for all bar interactive elements */
+.tts-bar button:focus-visible,
+.tts-bar__timeline:focus-visible {
+	outline: 2px solid var(--tts-dark, #333333);
+	outline-offset: 2px;
+}
+
+/* ---- INLINE BLOCK COLLAPSED STATE (sticky-active) ---- */
+
+/* When sticky bar is active, inline block collapses */
+.wp-block-tts-js-player[data-tts-state="sticky-active"] {
+	padding: 8px 16px;
+	border-radius: 8px;
+}
+
+.wp-block-tts-js-player[data-tts-state="sticky-active"] .tts-play-btn,
+.wp-block-tts-js-player[data-tts-state="sticky-active"] .tts-skip-btn,
+.wp-block-tts-js-player[data-tts-state="sticky-active"] .tts-progress,
+.wp-block-tts-js-player[data-tts-state="sticky-active"] .tts-speed-wrap,
+.wp-block-tts-js-player[data-tts-state="sticky-active"] .tts-duration,
+.wp-block-tts-js-player[data-tts-state="sticky-active"] .tts-resume {
+	display: none !important;
+}
+
+.wp-block-tts-js-player[data-tts-state="sticky-active"] .tts-label {
+	font-size: 14px;
+	font-weight: 400;
+	color: color-mix(in srgb, var(--tts-dark) 60%, transparent);
+}
+
+/* The label text will be changed to "Wordt voorgelezen..." by JS */
+
+/* ---- BAR RESPONSIVE BREAKPOINTS ---- */
+
+/* Tablet: 481-768px */
+@media (max-width: 768px) {
+
+	.tts-bar__voice {
+		display: none;
+	}
+
+	.tts-bar__title {
+		max-width: 160px;
+	}
+}
+
+/* Mobile: <=480px */
+@media (max-width: 480px) {
+
+	.tts-bar {
+		padding: 8px 16px;
+		padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+	}
+
+	.tts-bar__voice {
+		display: none;
+	}
+
+	.tts-bar__title {
+		max-width: 120px;
+	}
+
+	.tts-bar__skip {
+		width: 28px;
+		height: 28px;
+		min-width: 28px;
+	}
+
+	.tts-bar__speed {
+		min-width: 36px;
+	}
+}
+
+/* Small mobile: <=360px */
+@media (max-width: 360px) {
+
+	.tts-bar__title {
+		display: none;
+	}
+}
+
+/* ---- BAR REDUCED MOTION ---- */
+@media (prefers-reduced-motion: reduce) {
+
+	.tts-bar {
+		transition: none;
+	}
+
+	.tts-bar__timeline {
+		transition: none;
+	}
+
+	.tts-bar__timeline-fill {
+		transition: none;
+	}
+}
+
+/* Timeline hover expand (desktop only) */
+@media (hover: hover) {
+
+	.tts-bar__timeline {
+		transition: height 150ms ease;
+	}
+
+	.tts-bar__timeline:hover {
+		height: 8px;
+	}
+}
