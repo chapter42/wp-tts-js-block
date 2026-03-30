@@ -21,3 +21,88 @@ function tts_js_block_init() {
 	register_block_type( __DIR__ . '/build/tts-js' );
 }
 add_action( 'init', 'tts_js_block_init' );
+
+/**
+ * Register plugin settings.
+ *
+ * Uses admin_init hook per WordPress Settings API best practice.
+ */
+function tts_js_register_settings() {
+	register_setting( 'tts_js_settings', 'tts_js_auto_insert', array(
+		'type'              => 'boolean',
+		'default'           => false,
+		'sanitize_callback' => 'rest_sanitize_boolean',
+	) );
+}
+add_action( 'admin_init', 'tts_js_register_settings' );
+
+/**
+ * Add settings page under Settings menu.
+ */
+function tts_js_add_settings_page() {
+	add_options_page(
+		__( 'TTS Player Settings', 'tts-js' ),
+		__( 'TTS Player', 'tts-js' ),
+		'manage_options',
+		'tts-js-settings',
+		'tts_js_render_settings_page'
+	);
+}
+add_action( 'admin_menu', 'tts_js_add_settings_page' );
+
+/**
+ * Render the settings page with a single auto-insert toggle.
+ */
+function tts_js_render_settings_page() {
+	if ( ! current_user_can( 'manage_options' ) ) {
+		return;
+	}
+	?>
+	<div class="wrap">
+		<h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
+		<form action="options.php" method="post">
+			<?php settings_fields( 'tts_js_settings' ); ?>
+			<table class="form-table" role="presentation">
+				<tr>
+					<th scope="row">
+						<?php esc_html_e( 'Auto-insert', 'tts-js' ); ?>
+					</th>
+					<td>
+						<label>
+							<input type="checkbox" name="tts_js_auto_insert" value="1"
+								<?php checked( get_option( 'tts_js_auto_insert', false ) ); ?> />
+							<?php esc_html_e( 'Automatically add TTS player to new posts', 'tts-js' ); ?>
+						</label>
+						<p class="description">
+							<?php esc_html_e( 'When enabled, new posts will include the TTS player block at the top of the editor.', 'tts-js' ); ?>
+						</p>
+					</td>
+				</tr>
+			</table>
+			<?php submit_button(); ?>
+		</form>
+	</div>
+	<?php
+}
+
+/**
+ * Conditionally register the TTS block in the post template.
+ *
+ * Only active when the auto-insert option is enabled (D-04).
+ * Merges with existing template if one is already set (Pitfall 1).
+ * No template_lock — user can freely move/remove the block (D-03).
+ */
+function tts_js_register_post_template() {
+	if ( ! get_option( 'tts_js_auto_insert', false ) ) {
+		return;
+	}
+	$post_type_object = get_post_type_object( 'post' );
+	if ( $post_type_object ) {
+		// Merge with existing template if another plugin/theme set one.
+		$existing = $post_type_object->template ? $post_type_object->template : array();
+		array_unshift( $existing, array( 'tts-js/player', array() ) );
+		$post_type_object->template = $existing;
+		// D-03: No template_lock — user can freely move/remove.
+	}
+}
+add_action( 'init', 'tts_js_register_post_template' );

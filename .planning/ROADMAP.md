@@ -132,7 +132,12 @@ Plans:
 **Depends on**: Phase 6
 **Requirements**: UX-02, ADV-02
 **Sources**: todos/wp-repo-compliance.md, todos/screenshot-github.md
-**Plans:** Not planned yet
+**Plans:** 3 plans
+
+Plans:
+- [ ] 08-01-PLAN.md — Auto-insert settings page and block template registration in tts-js.php
+- [ ] 08-02-PLAN.md — Voice Diagnostics panel in editor sidebar with voice list and Test Voice button
+- [ ] 08-03-PLAN.md — WP.org readiness: output escaping audit, version bumps, readme update, ZIP generation
 
 ## Progress
 
@@ -148,4 +153,4 @@ Phases execute in numeric order: 1 → 2 → 3 (v1.0) → 4 → 5 → 6 → 7 �
 | 5. Accessibility & Keyboard Controls | 0/2 | Planned | — |
 | 6. Theme Integration & Language Selection | 0/2 | Planned | — |
 | 7. Enhanced Player Features | 0/3 | Planned | — |
-| 8. Auto-Insert & WP.org Publishing | 0/0 | Not planned | — |
+| 8. Auto-Insert & WP.org Publishing | 0/3 | Planned | — |
