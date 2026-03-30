@@ -105,24 +105,35 @@ $icon_stop    = '<svg class="tts-icon tts-icon--stop" width="20" height="20" vie
 $icon_error   = '<svg class="tts-icon tts-icon--error" width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="10" cy="10" r="8"/><line x1="10" y1="6" x2="10" y2="11"/><circle cx="10" cy="14" r="0.5" fill="currentColor"/></svg>';
 $icon_skip_back = '<svg class="tts-icon tts-icon--skip-back" width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><polygon points="10,4 2,10 10,16"/><polygon points="18,4 10,10 18,16"/></svg>';
 $icon_skip_forward = '<svg class="tts-icon tts-icon--skip-forward" width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><polygon points="2,4 10,10 2,16"/><polygon points="10,4 18,10 10,16"/></svg>';
+
+// Allowed SVG tags and attributes for wp_kses() escaping (PCP compliance).
+$allowed_svg = array(
+	'svg'      => array( 'class' => true, 'width' => true, 'height' => true, 'viewBox' => true, 'fill' => true, 'aria-hidden' => true, 'stroke' => true, 'stroke-width' => true, 'stroke-linecap' => true ),
+	'polygon'  => array( 'points' => true ),
+	'rect'     => array( 'x' => true, 'y' => true, 'width' => true, 'height' => true ),
+	'polyline' => array( 'points' => true ),
+	'circle'   => array( 'cx' => true, 'cy' => true, 'r' => true, 'fill' => true ),
+	'line'     => array( 'x1' => true, 'y1' => true, 'x2' => true, 'y2' => true ),
+	'path'     => array( 'd' => true, 'stroke-linecap' => true ),
+);
 ?>
 <div <?php echo $wrapper_attributes; ?>>
 	<button type="button" class="tts-skip-btn tts-skip-btn--back" aria-label="Vorige zin" tabindex="-1">
-		<?php echo $icon_skip_back; ?>
+		<?php echo wp_kses( $icon_skip_back, $allowed_svg ); ?>
 	</button>
 	<button type="button" class="tts-play-btn" aria-label="<?php echo esc_attr( $attributes['label'] ?? 'Luister naar artikel' ); ?>">
-		<?php echo $icon_play; ?>
-		<?php echo $icon_pause; ?>
-		<?php echo $icon_check; ?>
-		<?php echo $icon_spinner; ?>
-		<?php echo $icon_error; ?>
+		<?php echo wp_kses( $icon_play, $allowed_svg ); ?>
+		<?php echo wp_kses( $icon_pause, $allowed_svg ); ?>
+		<?php echo wp_kses( $icon_check, $allowed_svg ); ?>
+		<?php echo wp_kses( $icon_spinner, $allowed_svg ); ?>
+		<?php echo wp_kses( $icon_error, $allowed_svg ); ?>
 	</button>
 	<button type="button" class="tts-skip-btn tts-skip-btn--forward" aria-label="Volgende zin" tabindex="-1">
-		<?php echo $icon_skip_forward; ?>
+		<?php echo wp_kses( $icon_skip_forward, $allowed_svg ); ?>
 	</button>
 	<div class="tts-info">
 		<span class="tts-label"><?php echo $label; ?></span>
-		<span class="tts-duration" aria-live="polite">~<?php echo $reading_minutes; ?> min</span>
+		<span class="tts-duration" aria-live="polite">~<?php echo absint( $reading_minutes ); ?> min</span>
 		<div class="tts-resume" style="display:none;">
 			<span class="tts-resume__text"></span>
 			<button type="button" class="tts-resume__action tts-resume__action--continue">Ga verder</button>
@@ -139,7 +150,7 @@ $icon_skip_forward = '<svg class="tts-icon tts-icon--skip-forward" width="20" he
 		<button type="button" class="tts-speed-btn" aria-label="Afspeelsnelheid: 1x" aria-expanded="false">1x</button>
 		<ul class="tts-speed-menu" role="listbox" aria-label="Kies afspeelsnelheid" aria-hidden="true">
 			<?php foreach ( [ 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5 ] as $s ) : ?>
-				<li role="option" tabindex="-1" data-speed="<?php echo $s; ?>"<?php echo $s == 1.0 ? ' aria-selected="true" class="tts-speed-menu__active"' : ''; ?>><?php echo $s == (int) $s ? (int) $s . 'x' : $s . 'x'; ?></li>
+				<li role="option" tabindex="-1" data-speed="<?php echo esc_attr( $s ); ?>"<?php echo $s == 1.0 ? ' aria-selected="true" class="tts-speed-menu__active"' : ''; ?>><?php echo esc_html( $s == (int) $s ? (int) $s . 'x' : $s . 'x' ); ?></li>
 			<?php endforeach; ?>
 		</ul>
 	</div>
