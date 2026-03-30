@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: — Enhanced UX & Quality
-status: verifying
-stopped_at: Completed 08-03-PLAN.md (checkpoint pending)
-last_updated: "2026-03-30T14:27:06.794Z"
+status: executing
+stopped_at: Completed 09-01-PLAN.md
+last_updated: "2026-03-30T20:32:09.312Z"
 last_activity: 2026-03-30
 progress:
   total_phases: 9
   completed_phases: 7
-  total_plans: 22
-  completed_plans: 21
+  total_plans: 25
+  completed_plans: 22
   percent: 0
 ---
 
@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-27)
 
 **Core value:** Bezoekers van chapter42.com kunnen artikelen beluisteren via een native browser TTS player, zonder externe services of kosten.
-**Current focus:** Phase 08 — auto-insert-wp-publish
+**Current focus:** Phase 09 — sticky-bottom-player
 
 ## Current Position
 
-Phase: 08 (auto-insert-wp-publish) — EXECUTING
-Plan: 3 of 3
-Status: Phase complete — ready for verification
+Phase: 09 (sticky-bottom-player) — EXECUTING
+Plan: 2 of 3
+Status: Ready to execute
 Last activity: 2026-03-30
 
 Progress: [..........] 0%
@@ -72,6 +72,7 @@ Progress: [..........] 0%
 | Phase 08 P01 | 1min | 1 tasks | 1 files |
 | Phase 08 P02 | 1min | 1 tasks | 1 files |
 | Phase 08 P03 | 4min | 4 tasks | 8 files |
+| Phase 09 P01 | 3min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -106,6 +107,8 @@ Recent decisions affecting current work:
 - [Phase 08]: Used array_unshift to merge TTS block with existing post type template (defensive against other plugins)
 - [Phase 08]: D-08/D-11: Voice Diagnostics panel in InspectorControls with voice list and Test Voice button; no quality tier indicator
 - [Phase 08]: wp_kses with $allowed_svg array for SVG escaping (standard WP PCP pattern)
+- [Phase 09]: Bar HTML rendered outside block wrapper as standalone fixed element with static render guard
+- [Phase 09]: Separate data-tts-bar-state attribute for bar icon machine independent from inline data-tts-state
 
 ### Roadmap Evolution
 
@@ -128,6 +131,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-30T14:27:06.790Z
-Stopped at: Completed 08-03-PLAN.md (checkpoint pending)
+Last session: 2026-03-30T20:32:09.308Z
+Stopped at: Completed 09-01-PLAN.md
 Resume file: None

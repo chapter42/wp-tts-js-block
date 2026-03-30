@@ -25,6 +25,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 6: Theme Integration & Language Selection** - WordPress theme color inheritance, language dropdown in block settings, custom CSS classes
 - [ ] **Phase 7: Enhanced Player Features** - Skip forward/back, remember position, sentence highlighting
 - [ ] **Phase 8: Auto-Insert & WordPress.org Publishing** - Auto-insert player on all posts, voice diagnostics, screenshots, WP.org compliance
+- [ ] **Phase 9: Sticky Bottom Player** - LinkedIn-style persistent audio bar with timeline seeking and 15s skip
 
 ## Phase Details
 
@@ -139,10 +140,30 @@ Plans:
 - [x] 08-02-PLAN.md — Voice Diagnostics panel in editor sidebar with voice list and Test Voice button
 - [x] 08-03-PLAN.md — WP.org readiness: output escaping audit, version bumps, readme update, ZIP generation
 
+### Phase 9: Sticky Bottom Player
+**Goal:** Toggle in wp-admin enables a sticky bottom audio bar that opens when user clicks the inline TTS block, with progress bar, skip controls, and voice info — LinkedIn-style persistent player
+**Depends on:** Phase 8
+**Requirements**: STICKY-01, STICKY-02, STICKY-03, STICKY-04, STICKY-05, STICKY-06, STICKY-07, STICKY-08, STICKY-09
+**Success Criteria** (what must be TRUE):
+  1. wp-admin settings page has a "Use sticky bottom player" toggle (off by default)
+  2. When enabled, clicking inline play opens a fixed bottom bar with full controls
+  3. Inline block collapses to "Now playing" indicator when bar is active
+  4. Bar has article title, 15-second skip, play/pause, clickable timeline with timestamps, speed, voice name, close
+  5. User can click or drag the timeline to seek to any position
+  6. Close button stops playback, dismisses bar, restores inline block
+  7. Bar does not auto-close when playback finishes
+  8. Responsive: full controls on all breakpoints, safe-area padding on iOS
+**Plans:** 3 plans
+
+Plans:
+- [x] 09-01-PLAN.md — Settings toggle, bar HTML rendering with SVG icons, bar CSS with animations and responsive
+- [ ] 09-02-PLAN.md — Time utilities, TTSPlayer sticky mode, trigger/dismiss flows, bar control sync
+- [ ] 09-03-PLAN.md — Timeline seeking, 15-second skip, progress interpolation, keyboard accessibility
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 (v1.0) → 4 → 5 → 6 → 7 → 8 (v1.1)
+Phases execute in numeric order: 1 → 2 → 3 (v1.0) → 4 → 5 → 6 → 7 → 8 → 9 (v1.1)
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -154,13 +175,4 @@ Phases execute in numeric order: 1 → 2 → 3 (v1.0) → 4 → 5 → 6 → 7 �
 | 6. Theme Integration & Language Selection | 0/2 | Planned | — |
 | 7. Enhanced Player Features | 0/3 | Planned | — |
 | 8. Auto-Insert & WP.org Publishing | 0/3 | Planned | — |
-
-### Phase 9: Sticky Bottom Player
-
-**Goal:** Toggle in wp-admin enables a sticky bottom audio bar that opens when user clicks the inline TTS block, with progress bar, skip controls, and voice info — LinkedIn-style persistent player
-**Requirements**: TBD
-**Depends on:** Phase 8
-**Plans:** 0 plans
-
-Plans:
-- [ ] TBD (run /gsd:plan-phase 9 to break down)
+| 9. Sticky Bottom Player | 0/3 | Planned | — |
