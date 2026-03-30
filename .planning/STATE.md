@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: — Enhanced UX & Quality
-status: verifying
-stopped_at: Completed 07-03-PLAN.md
-last_updated: "2026-03-29T19:03:22.557Z"
-last_activity: 2026-03-29
+status: executing
+stopped_at: Completed 08-02-PLAN.md
+last_updated: "2026-03-30T14:20:54.427Z"
+last_activity: 2026-03-30
 progress:
-  total_phases: 8
-  completed_phases: 0
-  total_plans: 0
-  completed_plans: 10
+  total_phases: 9
+  completed_phases: 6
+  total_plans: 22
+  completed_plans: 20
   percent: 0
 ---
 
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-27)
 
 **Core value:** Bezoekers van chapter42.com kunnen artikelen beluisteren via een native browser TTS player, zonder externe services of kosten.
-**Current focus:** Phase 07 — enhanced-player
+**Current focus:** Phase 08 — auto-insert-wp-publish
 
 ## Current Position
 
-Phase: 07 (enhanced-player) — EXECUTING
+Phase: 08 (auto-insert-wp-publish) — EXECUTING
 Plan: 3 of 3
-Status: Phase complete — ready for verification
-Last activity: 2026-03-29
+Status: Ready to execute
+Last activity: 2026-03-30
 
 Progress: [..........] 0%
 
@@ -69,6 +69,8 @@ Progress: [..........] 0%
 | Phase 07 P01 | 3min | 2 tasks | 4 files |
 | Phase 07 P02 | 5min | 2 tasks | 3 files |
 | Phase 07 P03 | 5min | 2 tasks | 5 files |
+| Phase 08 P01 | 1min | 1 tasks | 1 files |
+| Phase 08 P02 | 1min | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -100,6 +102,8 @@ Recent decisions affecting current work:
 - [Phase 07]: Skip buttons flank play button with boundary clamping and speechSynthesis.cancel() for clean chunk transitions
 - [Phase 07]: Safe localStorage wrappers for Safari private browsing; pathname-scoped position keys with 7-day expiry
 - [Phase 07]: TreeWalker text-node walking for highlight injection; title chunk offset via WordPress selectors; multi-node spans silently skipped for robustness
+- [Phase 08]: Used array_unshift to merge TTS block with existing post type template (defensive against other plugins)
+- [Phase 08]: D-08/D-11: Voice Diagnostics panel in InspectorControls with voice list and Test Voice button; no quality tier indicator
 
 ### Roadmap Evolution
 
@@ -109,6 +113,7 @@ Recent decisions affecting current work:
 - Phase 6 added: Theme Integration & Language Selection
 - Phase 7 added: Enhanced Player Features
 - Phase 8 added: Auto-Insert & WordPress.org Publishing
+- Phase 9 added: Sticky Bottom Player (LinkedIn-style persistent audio bar)
 
 ### Pending Todos
 
@@ -121,6 +126,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-29T19:03:22.554Z
-Stopped at: Completed 07-03-PLAN.md
+Last session: 2026-03-30T14:20:54.423Z
+Stopped at: Completed 08-02-PLAN.md
 Resume file: None

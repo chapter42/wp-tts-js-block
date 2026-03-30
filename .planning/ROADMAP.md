@@ -135,8 +135,8 @@ Plans:
 **Plans:** 3 plans
 
 Plans:
-- [ ] 08-01-PLAN.md — Auto-insert settings page and block template registration in tts-js.php
-- [ ] 08-02-PLAN.md — Voice Diagnostics panel in editor sidebar with voice list and Test Voice button
+- [x] 08-01-PLAN.md — Auto-insert settings page and block template registration in tts-js.php
+- [x] 08-02-PLAN.md — Voice Diagnostics panel in editor sidebar with voice list and Test Voice button
 - [ ] 08-03-PLAN.md — WP.org readiness: output escaping audit, version bumps, readme update, ZIP generation
 
 ## Progress
@@ -154,3 +154,13 @@ Phases execute in numeric order: 1 → 2 → 3 (v1.0) → 4 → 5 → 6 → 7 �
 | 6. Theme Integration & Language Selection | 0/2 | Planned | — |
 | 7. Enhanced Player Features | 0/3 | Planned | — |
 | 8. Auto-Insert & WP.org Publishing | 0/3 | Planned | — |
+
+### Phase 9: Sticky Bottom Player
+
+**Goal:** Toggle in wp-admin enables a sticky bottom audio bar that opens when user clicks the inline TTS block, with progress bar, skip controls, and voice info — LinkedIn-style persistent player
+**Requirements**: TBD
+**Depends on:** Phase 8
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 9 to break down)
