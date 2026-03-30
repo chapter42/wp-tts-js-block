@@ -1,5 +1,5 @@
 import { InspectorControls, useBlockProps } from '@wordpress/block-editor';
-import { PanelBody, SelectControl, TextControl, ToggleControl } from '@wordpress/components';
+import { Button, PanelBody, SelectControl, TextControl, ToggleControl } from '@wordpress/components';
 import { useState, useEffect } from '@wordpress/element';
 import './editor.scss';
 
@@ -107,12 +107,50 @@ function useAvailableLanguages() {
 	return languages;
 }
 
+function getVoicesForLang( langCode ) {
+	const synth = window.speechSynthesis || ( window.parent && window.parent.speechSynthesis );
+	if ( ! synth ) return [];
+	const voices = synth.getVoices();
+	const langPrefix = langCode.split( '-' )[ 0 ];
+	return voices.filter( ( v ) => {
+		const code = v.lang.replace( '_', '-' );
+		return code === langCode || code.startsWith( langPrefix + '-' );
+	} );
+}
+
+function testVoice( voice, langCode ) {
+	const synth = window.speechSynthesis || ( window.parent && window.parent.speechSynthesis );
+	if ( ! synth ) return;
+	synth.cancel();
+	const sampleText = langCode.startsWith( 'nl' )
+		? 'Dit is een testbericht van de voorleesfunctie.'
+		: 'This is a test message from the text-to-speech player.';
+	const utterance = new SpeechSynthesisUtterance( sampleText );
+	utterance.voice = voice;
+	utterance.lang = langCode;
+	utterance.rate = 1;
+	synth.speak( utterance );
+}
+
 export default function Edit( { attributes, setAttributes } ) {
 	const { lang, speed, label, enableHighlighting } = attributes;
 	const blockProps = useBlockProps( {
 		className: 'tts-player tts-player--preview',
 	} );
 	const languages = useAvailableLanguages();
+	const [ voicesForLang, setVoicesForLang ] = useState( [] );
+
+	useEffect( () => {
+		const updateVoices = () => {
+			setVoicesForLang( getVoicesForLang( lang ) );
+		};
+		updateVoices();
+		const synth = window.speechSynthesis || ( window.parent && window.parent.speechSynthesis );
+		if ( synth ) {
+			synth.addEventListener( 'voiceschanged', updateVoices );
+			return () => synth.removeEventListener( 'voiceschanged', updateVoices );
+		}
+	}, [ lang ] );
 
 	// Same SVG icons as render.php (20x20 viewBox, currentColor fill)
 	const iconPlay = (
@@ -208,6 +246,33 @@ export default function Edit( { attributes, setAttributes } ) {
 						}
 						__nextHasNoMarginBottom
 					/>
+				</PanelBody>
+				<PanelBody title="Voice Diagnostics" initialOpen={ false }>
+					{ voicesForLang.length === 0 ? (
+						<p>No voices available for <strong>{ lang }</strong></p>
+					) : (
+						<>
+							<p>{ voicesForLang.length } voice{ voicesForLang.length !== 1 ? 's' : '' } available for <strong>{ lang }</strong>:</p>
+							<ul style={ { margin: '8px 0', paddingLeft: '20px' } }>
+								{ voicesForLang.map( ( v ) => (
+									<li key={ v.name } style={ { marginBottom: '4px' } }>
+										{ v.name } <small>({ v.lang.replace( '_', '-' ) })</small>
+									</li>
+								) ) }
+							</ul>
+						</>
+					) }
+					<Button
+						variant="secondary"
+						onClick={ () => {
+							if ( voicesForLang.length > 0 ) {
+								testVoice( voicesForLang[ 0 ], lang );
+							}
+						} }
+						disabled={ voicesForLang.length === 0 }
+					>
+						Test Voice
+					</Button>
 				</PanelBody>
 			</InspectorControls>
 			<div { ...blockProps }>
