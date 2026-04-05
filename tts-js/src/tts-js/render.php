@@ -199,7 +199,6 @@ if ( get_option( 'tts_js_sticky_player', false ) ) :
 	<div class="tts-bar__speed-wrap">
 		<button type="button" class="tts-bar__speed" aria-label="Afspeelsnelheid: 1x">1x</button>
 	</div>
-	<span class="tts-bar__voice"></span>
 	<button type="button" class="tts-bar__close"
 	        aria-label="<?php esc_attr_e( 'Speler sluiten', 'tts-js' ); ?>">
 		<?php echo wp_kses( $icon_close, $allowed_svg ); ?>

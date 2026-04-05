@@ -2,7 +2,7 @@
 Contributors:      royhuiskes
 Tags:              text-to-speech, tts, gutenberg, block, accessibility, speech
 Tested up to:      6.8
-Stable tag:        1.1.0
+Stable tag:        1.1.2
 Requires at least: 6.5
 Requires PHP:      7.4
 License:           GPL-2.0-or-later
@@ -65,7 +65,22 @@ De plugin splitst lange teksten op in zinnen en speelt ze achter elkaar af. Dit 
 
 == Changelog ==
 
+= 1.1.2 =
+* Bugfix: sticky bar nu over volle schermbreedte (was beperkt tot content container)
+* Bugfix: zinmarkering (highlight) werkt nu ook buiten het player block
+* Bugfix: voice naam verwijderd uit sticky bar (overzichtelijker)
+* Sticky bottom player — LinkedIn-style vaste audiobalk onderin het scherm
+* Klikbare en versleepbare tijdlijn voor seek-functionaliteit
+* 15-seconden vooruit/achteruit skip knoppen
+* Vloeiende voortgangsanimatie met requestAnimationFrame
+* Toetsenbord-navigatie op tijdlijn (pijltjes = 5% seek)
+
 = 1.1.0 =
+* Sticky bottom player — LinkedIn-style vaste audiobalk onderin het scherm
+* Klikbare en versleepbare tijdlijn voor seek-functionaliteit
+* 15-seconden vooruit/achteruit skip knoppen
+* Vloeiende voortgangsanimatie met requestAnimationFrame
+* Toetsenbord-navigatie op tijdlijn (pijltjes = 5% seek)
 * Skip vooruit/achteruit knoppen voor zin-navigatie
 * Afspeelpositie onthouden via localStorage (7 dagen)
 * Zinmarkering met auto-scroll tijdens afspelen

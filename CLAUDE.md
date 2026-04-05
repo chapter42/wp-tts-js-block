@@ -103,13 +103,87 @@ Een WordPress plugin die een clean "Listen to article" player toevoegt als Guten
 <!-- GSD:conventions-start source:CONVENTIONS.md -->
 ## Conventions
 
-Conventions not yet established. Will populate as patterns emerge during development.
+- **CSS state machine**: `data-tts-state` attribute on container drives all visual transitions (idle, loading, playing, paused, finished, error). JS sets the attribute; CSS does the rest.
+- **Dynamic block**: `render.php` generates all player HTML server-side. `save()` returns `null`. No block validation issues.
+- **Vanilla JS only**: No frameworks on frontend. `view.js` is the speech engine (~700 lines).
+- **Sentence-level chunking**: Text splits at `.!?` + uppercase. Long sentences sub-split at clause boundaries (commas, semicolons) at 300 chars.
+- **Android-safe pause**: Mobile uses chunk-boundary pause (`isPausePending` flag) instead of `speechSynthesis.pause()`.
+- **Function prefix**: All PHP functions/classes must use `tts_js_` prefix (WordPress convention).
+- **No external dependencies**: Frontend has zero npm runtime deps. WordPress packages are provided at runtime by WP itself.
+- **Current milestone**: v1.1 — Testing & Quality first, then UX enhancements, then WP.org publishing.
 <!-- GSD:conventions-end -->
+
+## Distribution & Release Checklist
+
+Na elke feature-fase of bugfix die klaar is voor distributie, voer deze stappen uit:
+
+### 1. Tests draaien
+```bash
+cd tts-js && npx wp-scripts test-unit-js --passWithNoTests --no-coverage
+```
+Alle tests moeten slagen voor er gebuild wordt.
+
+### 2. Lint checks
+```bash
+cd tts-js && npx wp-scripts lint-js src/ && npx wp-scripts lint-style src/
+```
+
+### 3. Versienummer bumpen (als er nieuwe features zijn)
+Update het versienummer op **alle drie** plekken tegelijk:
+- `tts-js/tts-js.php` → `Version: X.Y.Z` header
+- `tts-js/readme.txt` → `Stable tag: X.Y.Z`
+- `tts-js/package.json` → `"version": "X.Y.Z"`
+
+### 4. Changelog bijwerken
+Voeg een nieuw `= X.Y.Z =` blok toe aan `tts-js/readme.txt` onder `== Changelog ==`.
+Schrijf in het Nederlands. Eén bullet per feature/fix.
+
+### 5. Build + dist genereren
+```bash
+cd tts-js && npx wp-scripts build
+```
+Kopieer daarna naar `dist/`:
+```bash
+cd .. && rm -rf dist/tts-js dist/tts-js.zip
+mkdir -p dist/tts-js/build
+cp tts-js/tts-js.php tts-js/readme.txt dist/tts-js/
+cp -r tts-js/build/tts-js dist/tts-js/build/
+cd dist && zip -r tts-js.zip tts-js/ && cd ..
+```
+De `dist/tts-js.zip` is het installeerbare WordPress plugin bestand.
+
+### 6. Verifieer dist
+```bash
+# Check dat view.js in dist even groot is als in build
+wc -c tts-js/build/tts-js/view.js dist/tts-js/build/tts-js/view.js
+# Check versienummer in dist
+grep "Version:" dist/tts-js/tts-js.php
+grep "Stable tag:" dist/tts-js/readme.txt
+```
+
+### Regel: dist/ moet altijd up-to-date zijn
+Na elke build die commits krijgt, moet `dist/` mee-updaten. Een stale dist is een bug.
 
 <!-- GSD:architecture-start source:ARCHITECTURE.md -->
 ## Architecture
 
-Architecture not yet mapped. Follow existing patterns found in the codebase.
+```
+tts-js/
+├── tts-js.php              → Plugin bootstrap (register_block_type)
+├── build/tts-js/            → Compiled output (wp-scripts build)
+│   ├── block.json           → Block registration metadata
+│   ├── render.php           → Server-side HTML rendering + text extraction
+│   ├── view.js              → Frontend speech engine (~700 lines)
+│   ├── index.js             → Editor script (Gutenberg sidebar)
+│   └── style-index.css      → Player styles
+└── src/tts-js/              → Source files
+    ├── render.php           → parse_blocks() text extraction, player markup, error messages
+    ├── view.js              → Chunked speech: splitIntoChunks, pickBestVoice, TTSPlayer class
+    ├── edit.js              → Editor preview + InspectorControls (language, speed)
+    └── style.scss           → 6-state CSS machine + responsive breakpoints
+```
+
+**Key patterns**: `render.php` extracts text → `data-tts-text` attribute → `view.js` reads it → chunks → `speechSynthesis.speak()` per chunk → `onend` chains next chunk.
 <!-- GSD:architecture-end -->
 
 <!-- GSD:workflow-start source:GSD defaults -->

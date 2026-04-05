@@ -1,7 +1,15 @@
 import { InspectorControls, useBlockProps } from '@wordpress/block-editor';
-import { Button, PanelBody, SelectControl, TextControl, ToggleControl } from '@wordpress/components';
-import { useState, useEffect } from '@wordpress/element';
+import {
+	Button,
+	PanelBody,
+	SelectControl,
+	TextControl,
+	ToggleControl,
+} from '@wordpress/components';
+import { useState, useEffect } from '@wordpress/element'; // eslint-disable-line import/no-extraneous-dependencies
 import './editor.scss';
+
+/* global SpeechSynthesisUtterance */
 
 const FALLBACK_LANGUAGES = {
 	nl: { name: 'Dutch', variants: [ { code: 'nl-NL', label: 'nl-NL' } ] },
@@ -108,8 +116,12 @@ function useAvailableLanguages() {
 }
 
 function getVoicesForLang( langCode ) {
-	const synth = window.speechSynthesis || ( window.parent && window.parent.speechSynthesis );
-	if ( ! synth ) return [];
+	const synth =
+		window.speechSynthesis ||
+		( window.parent && window.parent.speechSynthesis );
+	if ( ! synth ) {
+		return [];
+	}
 	const voices = synth.getVoices();
 	const langPrefix = langCode.split( '-' )[ 0 ];
 	return voices.filter( ( v ) => {
@@ -119,8 +131,12 @@ function getVoicesForLang( langCode ) {
 }
 
 function testVoice( voice, langCode ) {
-	const synth = window.speechSynthesis || ( window.parent && window.parent.speechSynthesis );
-	if ( ! synth ) return;
+	const synth =
+		window.speechSynthesis ||
+		( window.parent && window.parent.speechSynthesis );
+	if ( ! synth ) {
+		return;
+	}
 	synth.cancel();
 	const sampleText = langCode.startsWith( 'nl' )
 		? 'Dit is een testbericht van de voorleesfunctie.'
@@ -145,10 +161,13 @@ export default function Edit( { attributes, setAttributes } ) {
 			setVoicesForLang( getVoicesForLang( lang ) );
 		};
 		updateVoices();
-		const synth = window.speechSynthesis || ( window.parent && window.parent.speechSynthesis );
+		const synth =
+			window.speechSynthesis ||
+			( window.parent && window.parent.speechSynthesis );
 		if ( synth ) {
 			synth.addEventListener( 'voiceschanged', updateVoices );
-			return () => synth.removeEventListener( 'voiceschanged', updateVoices );
+			return () =>
+				synth.removeEventListener( 'voiceschanged', updateVoices );
 		}
 	}, [ lang ] );
 
@@ -185,13 +204,9 @@ export default function Edit( { attributes, setAttributes } ) {
 					<SelectControl
 						label="Taal"
 						value={ lang }
-						onChange={ ( val ) =>
-							setAttributes( { lang: val } )
-						}
+						onChange={ ( val ) => setAttributes( { lang: val } ) }
 						disabled={ ! languages }
-						help={
-							! languages ? 'Talen laden...' : undefined
-						}
+						help={ ! languages ? 'Talen laden...' : undefined }
 						__next40pxDefaultSize
 						__nextHasNoMarginBottom
 					>
@@ -249,14 +264,31 @@ export default function Edit( { attributes, setAttributes } ) {
 				</PanelBody>
 				<PanelBody title="Voice Diagnostics" initialOpen={ false }>
 					{ voicesForLang.length === 0 ? (
-						<p>No voices available for <strong>{ lang }</strong></p>
+						<p>
+							No voices available for <strong>{ lang }</strong>
+						</p>
 					) : (
 						<>
-							<p>{ voicesForLang.length } voice{ voicesForLang.length !== 1 ? 's' : '' } available for <strong>{ lang }</strong>:</p>
-							<ul style={ { margin: '8px 0', paddingLeft: '20px' } }>
+							<p>
+								{ voicesForLang.length } voice
+								{ voicesForLang.length !== 1 ? 's' : '' }{ ' ' }
+								available for <strong>{ lang }</strong>:
+							</p>
+							<ul
+								style={ {
+									margin: '8px 0',
+									paddingLeft: '20px',
+								} }
+							>
 								{ voicesForLang.map( ( v ) => (
-									<li key={ v.name } style={ { marginBottom: '4px' } }>
-										{ v.name } <small>({ v.lang.replace( '_', '-' ) })</small>
+									<li
+										key={ v.name }
+										style={ { marginBottom: '4px' } }
+									>
+										{ v.name }{ ' ' }
+										<small>
+											({ v.lang.replace( '_', '-' ) })
+										</small>
 									</li>
 								) ) }
 							</ul>
@@ -276,8 +308,20 @@ export default function Edit( { attributes, setAttributes } ) {
 				</PanelBody>
 			</InspectorControls>
 			<div { ...blockProps }>
-				<button className="tts-skip-btn tts-skip-btn--back" disabled aria-label="Vorige zin" style={ { display: 'flex' } }>
-					<svg className="tts-icon tts-icon--skip-back" width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+				<button
+					className="tts-skip-btn tts-skip-btn--back"
+					disabled
+					aria-label="Vorige zin"
+					style={ { display: 'flex' } }
+				>
+					<svg
+						className="tts-icon tts-icon--skip-back"
+						width="20"
+						height="20"
+						viewBox="0 0 20 20"
+						fill="currentColor"
+						aria-hidden="true"
+					>
 						<polygon points="10,4 2,10 10,16" />
 						<polygon points="18,4 10,10 18,16" />
 					</svg>
@@ -285,8 +329,20 @@ export default function Edit( { attributes, setAttributes } ) {
 				<button className="tts-play-btn" disabled aria-label={ label }>
 					{ iconPlay }
 				</button>
-				<button className="tts-skip-btn tts-skip-btn--forward" disabled aria-label="Volgende zin" style={ { display: 'flex' } }>
-					<svg className="tts-icon tts-icon--skip-forward" width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+				<button
+					className="tts-skip-btn tts-skip-btn--forward"
+					disabled
+					aria-label="Volgende zin"
+					style={ { display: 'flex' } }
+				>
+					<svg
+						className="tts-icon tts-icon--skip-forward"
+						width="20"
+						height="20"
+						viewBox="0 0 20 20"
+						fill="currentColor"
+						aria-hidden="true"
+					>
 						<polygon points="2,4 10,10 2,16" />
 						<polygon points="10,4 18,10 10,16" />
 					</svg>

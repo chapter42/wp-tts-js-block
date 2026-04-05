@@ -3,7 +3,7 @@
  * Plugin Name:       Luister naar artikel — Text-to-Speech Player
  * Plugin URI:        https://github.com/chapter42/wp-tts-js-block
  * Description:       Voeg een "Luister naar artikel" player toe als Gutenberg block. Leest artikelen voor met de ingebouwde Web Speech API van de browser — geen externe API's, geen kosten, privacy-friendly.
- * Version:           1.1.0
+ * Version:           1.1.2
  * Requires at least: 6.5
  * Requires PHP:      7.4
  * Author:            Roy Huiskes | chapter42.com

@@ -238,14 +238,16 @@ export function formatTimestamp( seconds ) {
  * Uses WORDS_PER_MINUTE to estimate chunk duration from word count.
  *
  * @param {string[]} chunks - Array of text chunks
- * @return {{ chunkTimes: number[], totalDuration: number }}
+ * @return {{ chunkTimes: number[], totalDuration: number }} Chunk start times and total duration
  */
 export function buildChunkTimes( chunks ) {
 	const chunkTimes = [];
 	let cumulative = 0;
 	for ( const chunk of chunks ) {
 		chunkTimes.push( cumulative );
-		const words = chunk.split( /\s+/ ).filter( ( w ) => w.length > 0 ).length;
+		const words = chunk
+			.split( /\s+/ )
+			.filter( ( w ) => w.length > 0 ).length;
 		cumulative += ( words / WORDS_PER_MINUTE ) * 60;
 	}
 	return { chunkTimes, totalDuration: cumulative };

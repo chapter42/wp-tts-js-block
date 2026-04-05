@@ -1,8 +1,9 @@
 /* Player container (per D3 -- full width, per UI-SPEC spacing) */
 .wp-block-tts-js-player {
+
 	/* Theme color inheritance (D-01, D-02, D-04) with neutral gray fallbacks */
-	--tts-primary: var(--wp--preset--color--primary, var(--wp--preset--color--accent, #666666));
-	--tts-dark: var(--wp--preset--color--contrast, #333333);
+	--tts-primary: var(--wp--preset--color--primary, var(--wp--preset--color--accent, #666));
+	--tts-dark: var(--wp--preset--color--contrast, #333);
 	--tts-light: var(--wp--preset--color--base, #f0f0f0);
 
 	/* Derived properties using color-mix() */
@@ -337,7 +338,7 @@
 }
 
 .tts-hl--active {
-	background-color: var(--tts-highlight);
+	background-color: var(--tts-highlight, rgba(102, 102, 102, 0.15));
 }
 
 /* Screen reader only -- visually hidden, accessible to AT */
@@ -498,7 +499,7 @@
 	padding: 8px 24px;
 	padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
 	background: var(--tts-light, #f0f0f0);
-	border-top: 1px solid color-mix(in srgb, var(--tts-dark, #333333) 15%, transparent);
+	border-top: 1px solid color-mix(in srgb, var(--tts-dark, #333) 15%, transparent);
 	box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.08);
 	font-family: inherit;
 	box-sizing: border-box;
@@ -535,7 +536,7 @@ body.tts-bar-active {
 	font-size: 14px;
 	font-weight: 600;
 	line-height: 1.4;
-	color: var(--tts-dark, #333333);
+	color: var(--tts-dark, #333);
 	max-width: 200px;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -549,7 +550,7 @@ body.tts-bar-active {
 	height: 36px;
 	min-width: 36px;
 	border: none;
-	background: var(--tts-primary, #666666);
+	background: var(--tts-primary, #666);
 	color: #fff;
 	cursor: pointer;
 	display: flex;
@@ -561,7 +562,7 @@ body.tts-bar-active {
 }
 
 .tts-bar__play:hover {
-	background: var(--tts-dark, #333333);
+	background: var(--tts-dark, #333);
 }
 
 .tts-bar__play:active {
@@ -569,6 +570,7 @@ body.tts-bar-active {
 }
 
 /* Bar icon state machine (data-tts-bar-state) */
+
 /* All icons hidden by default */
 .tts-bar__play .tts-icon {
 	display: none;
@@ -600,7 +602,69 @@ body.tts-bar-active {
 	display: block;
 }
 
-/* Skip button visibility -- hide when finished/error */
+/* Bar skip buttons */
+.tts-bar__skip {
+	width: 32px;
+	height: 32px;
+	min-width: 32px;
+	border: none;
+	background: transparent;
+	color: var(--tts-dark, #333);
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	padding: 0;
+	border-radius: 50%;
+}
+
+.tts-bar__skip:hover {
+	background: var(--tts-btn-hover, color-mix(in srgb, #333 8%, transparent));
+}
+
+.tts-bar__skip:active {
+	transform: scale(0.95);
+}
+
+/* Bar timeline */
+.tts-bar__timeline {
+	flex: 1;
+	height: 4px;
+	background: var(--tts-progress-track, color-mix(in srgb, #333 15%, transparent));
+	border-radius: 2px;
+	cursor: pointer;
+	position: relative;
+	touch-action: none;
+}
+
+.tts-bar__timeline-fill {
+	height: 100%;
+	width: 0%;
+	background: var(--tts-progress-fill, var(--tts-primary, #666));
+	border-radius: 2px;
+	transition: width 300ms ease;
+}
+
+/* Timestamps */
+.tts-bar__elapsed,
+.tts-bar__total {
+	font-size: 12px;
+	font-weight: 400;
+	line-height: 1;
+	color: var(--tts-dark, #333);
+	flex-shrink: 0;
+	min-width: 32px;
+}
+
+/* Focus indicators for all bar interactive elements */
+.tts-bar button:focus-visible,
+.tts-bar__timeline:focus-visible {
+	outline: 2px solid var(--tts-dark, #333);
+	outline-offset: 2px;
+}
+
+/* Skip/timeline/timestamp visibility -- hide when finished/error */
 .tts-bar[data-tts-bar-state="finished"] .tts-bar__skip,
 .tts-bar[data-tts-bar-state="error"] .tts-bar__skip {
 	display: none;
@@ -613,61 +677,6 @@ body.tts-bar-active {
 .tts-bar[data-tts-bar-state="error"] .tts-bar__elapsed,
 .tts-bar[data-tts-bar-state="error"] .tts-bar__total {
 	display: none;
-}
-
-/* Bar skip buttons */
-.tts-bar__skip {
-	width: 32px;
-	height: 32px;
-	min-width: 32px;
-	border: none;
-	background: transparent;
-	color: var(--tts-dark, #333333);
-	cursor: pointer;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	flex-shrink: 0;
-	padding: 0;
-	border-radius: 50%;
-}
-
-.tts-bar__skip:hover {
-	background: var(--tts-btn-hover, color-mix(in srgb, #333333 8%, transparent));
-}
-
-.tts-bar__skip:active {
-	transform: scale(0.95);
-}
-
-/* Bar timeline */
-.tts-bar__timeline {
-	flex: 1;
-	height: 4px;
-	background: var(--tts-progress-track, color-mix(in srgb, #333333 15%, transparent));
-	border-radius: 2px;
-	cursor: pointer;
-	position: relative;
-	touch-action: none;
-}
-
-.tts-bar__timeline-fill {
-	height: 100%;
-	width: 0%;
-	background: var(--tts-progress-fill, var(--tts-primary, #666666));
-	border-radius: 2px;
-	transition: width 300ms ease;
-}
-
-/* Timestamps */
-.tts-bar__elapsed,
-.tts-bar__total {
-	font-size: 12px;
-	font-weight: 400;
-	line-height: 1;
-	color: var(--tts-dark, #333333);
-	flex-shrink: 0;
-	min-width: 32px;
 }
 
 /* Bar speed button */
@@ -686,24 +695,12 @@ body.tts-bar-active {
 	font-size: 14px;
 	font-weight: 600;
 	line-height: 1;
-	color: var(--tts-dark, #333333);
+	color: var(--tts-dark, #333);
 	cursor: pointer;
 }
 
 .tts-bar__speed:hover {
-	background: var(--tts-btn-hover, color-mix(in srgb, #333333 8%, transparent));
-}
-
-/* Voice name */
-.tts-bar__voice {
-	font-size: 12px;
-	font-weight: 400;
-	color: color-mix(in srgb, var(--tts-dark, #333333) 60%, transparent);
-	max-width: 120px;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-	flex-shrink: 0;
+	background: var(--tts-btn-hover, color-mix(in srgb, #333 8%, transparent));
 }
 
 /* Close button */
@@ -713,7 +710,7 @@ body.tts-bar-active {
 	min-width: 32px;
 	border: none;
 	background: transparent;
-	color: var(--tts-dark, #333333);
+	color: var(--tts-dark, #333);
 	cursor: pointer;
 	display: flex;
 	align-items: center;
@@ -724,18 +721,11 @@ body.tts-bar-active {
 }
 
 .tts-bar__close:hover {
-	background: var(--tts-btn-hover, color-mix(in srgb, #333333 8%, transparent));
+	background: var(--tts-btn-hover, color-mix(in srgb, #333 8%, transparent));
 }
 
 .tts-bar__close:active {
 	transform: scale(0.95);
-}
-
-/* Focus indicators for all bar interactive elements */
-.tts-bar button:focus-visible,
-.tts-bar__timeline:focus-visible {
-	outline: 2px solid var(--tts-dark, #333333);
-	outline-offset: 2px;
 }
 
 /* ---- INLINE BLOCK COLLAPSED STATE (sticky-active) ---- */
@@ -768,10 +758,6 @@ body.tts-bar-active {
 /* Tablet: 481-768px */
 @media (max-width: 768px) {
 
-	.tts-bar__voice {
-		display: none;
-	}
-
 	.tts-bar__title {
 		max-width: 160px;
 	}
@@ -783,10 +769,6 @@ body.tts-bar-active {
 	.tts-bar {
 		padding: 8px 16px;
 		padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
-	}
-
-	.tts-bar__voice {
-		display: none;
 	}
 
 	.tts-bar__title {

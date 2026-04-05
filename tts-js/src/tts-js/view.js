@@ -1,4 +1,4 @@
-/* global speechSynthesis, SpeechSynthesisUtterance, localStorage, requestAnimationFrame, cancelAnimationFrame */
+/* global speechSynthesis, SpeechSynthesisUtterance, localStorage, requestAnimationFrame, cancelAnimationFrame, NodeFilter */
 
 /**
  * TTS-JS Frontend Player
@@ -204,10 +204,14 @@ class TTSPlayer {
 	static loadPosition() {
 		const key = `tts-position-${ window.location.pathname }`;
 		const raw = safeGetItem( key );
-		if ( ! raw ) return null;
+		if ( ! raw ) {
+			return null;
+		}
 		try {
 			const data = JSON.parse( raw );
-			if ( ! data || typeof data.chunkIndex !== 'number' ) return null;
+			if ( ! data || typeof data.chunkIndex !== 'number' ) {
+				return null;
+			}
 			const SEVEN_DAYS = 7 * 24 * 60 * 60 * 1000;
 			if ( Date.now() - data.timestamp > SEVEN_DAYS ) {
 				safeRemoveItem( key );
@@ -251,8 +255,7 @@ class TTSPlayer {
 		this.capabilitiesChecked = false;
 
 		// Highlighting state (Phase 7 -- D-11, D-14)
-		this.highlightingEnabled =
-			container.dataset.ttsHighlight === 'true';
+		this.highlightingEnabled = container.dataset.ttsHighlight === 'true';
 		this.highlightSpansInjected = false;
 
 		// Resilience state (Phase 3 Plan 03 -- D-03, D-07, D-08)
@@ -281,11 +284,15 @@ class TTSPlayer {
 
 		// Skip buttons (Phase 7 -- D-02, D-16)
 		this.skipBackBtn = container.querySelector( '.tts-skip-btn--back' );
-		this.skipForwardBtn = container.querySelector( '.tts-skip-btn--forward' );
+		this.skipForwardBtn = container.querySelector(
+			'.tts-skip-btn--forward'
+		);
 
 		// Label element (inline block label text)
 		this.label = container.querySelector( '.tts-label' );
-		this._originalLabel = this.label ? this.label.textContent : 'Luister naar artikel';
+		this._originalLabel = this.label
+			? this.label.textContent
+			: 'Luister naar artikel';
 
 		// Sticky bar mode (Phase 9)
 		this.stickyEnabled = this.container.dataset.ttsSticky === 'true';
@@ -299,7 +306,6 @@ class TTSPlayer {
 		this.barTimelineFill = null;
 		this.barTimeline = null;
 		this.barSpeedBtn = null;
-		this.barVoice = null;
 		this.barTitle = null;
 		this.barClose = null;
 		this.chunkTimes = [];
@@ -383,7 +389,10 @@ class TTSPlayer {
 
 		// Save position on page unload (per D-07)
 		window.addEventListener( 'beforeunload', () => {
-			if ( this.state === STATES.PLAYING || this.state === STATES.PAUSED ) {
+			if (
+				this.state === STATES.PLAYING ||
+				this.state === STATES.PAUSED
+			) {
 				this.savePosition();
 			}
 		} );
@@ -445,7 +454,8 @@ class TTSPlayer {
 
 		// Skip buttons: tabbable only in playing/paused states (per D-04, D-16)
 		const skipBtns = this.container.querySelectorAll( '.tts-skip-btn' );
-		const isActive = newState === STATES.PLAYING || newState === STATES.PAUSED;
+		const isActive =
+			newState === STATES.PLAYING || newState === STATES.PAUSED;
 		skipBtns.forEach( ( btn ) => {
 			btn.setAttribute( 'tabindex', isActive ? '0' : '-1' );
 		} );
@@ -642,7 +652,9 @@ class TTSPlayer {
 
 		// Hide resume prompt if visible
 		const resumeEl = this.container.querySelector( '.tts-resume' );
-		if ( resumeEl ) resumeEl.style.display = 'none';
+		if ( resumeEl ) {
+			resumeEl.style.display = 'none';
+		}
 
 		this.setState( STATES.LOADING );
 
@@ -685,10 +697,6 @@ class TTSPlayer {
 					return;
 				}
 				this.resolvedVoice = voice;
-			}
-			// Update bar voice name when voice is resolved
-			if ( this.stickyMode && this.barVoice && this.resolvedVoice ) {
-				this.barVoice.textContent = this.resolvedVoice.name;
 			}
 		}
 
@@ -973,14 +981,9 @@ class TTSPlayer {
 			) {
 				chunkOffset = 1;
 				let titleAccum = '';
-				for (
-					let i = 0;
-					i < this.chunks.length && i < 3;
-					i++
-				) {
+				for ( let i = 0; i < this.chunks.length && i < 3; i++ ) {
 					titleAccum +=
-						( titleAccum ? ' ' : '' ) +
-						this.chunks[ i ].trim();
+						( titleAccum ? ' ' : '' ) + this.chunks[ i ].trim();
 					if (
 						titleAccum === titleText ||
 						titleAccum.length >= titleText.length
@@ -1001,11 +1004,7 @@ class TTSPlayer {
 		let currentElIndex = 0;
 		let elTextOffset = 0;
 
-		for (
-			let ci = chunkOffset;
-			ci < this.chunks.length;
-			ci++
-		) {
+		for ( let ci = chunkOffset; ci < this.chunks.length; ci++ ) {
 			if ( currentElIndex >= contentEls.length ) {
 				break;
 			}
@@ -1044,48 +1043,34 @@ class TTSPlayer {
 			for ( const tn of textNodes ) {
 				const tnText = tn.textContent;
 				const fullAccum = accumulated + tnText;
-				const chunkPos = fullAccum.indexOf(
-					chunkText,
-					elTextOffset
-				);
+				const chunkPos = fullAccum.indexOf( chunkText, elTextOffset );
 
 				if ( chunkPos !== -1 ) {
 					const chunkEnd = chunkPos + chunkText.length;
 					const tnStart = accumulated.length;
 					const tnEnd = tnStart + tnText.length;
 
-					if (
-						chunkPos >= tnStart &&
-						chunkEnd <= tnEnd
-					) {
+					if ( chunkPos >= tnStart && chunkEnd <= tnEnd ) {
 						// Chunk is entirely within this text node
 						const localStart = chunkPos - tnStart;
-						const localEnd =
-							localStart + chunkText.length;
+						const localEnd = localStart + chunkText.length;
 
 						const span = document.createElement( 'span' );
 						span.className = 'tts-hl';
 						span.dataset.chunk = ci;
 
-						if (
-							localStart === 0 &&
-							localEnd === tnText.length
-						) {
+						if ( localStart === 0 && localEnd === tnText.length ) {
 							tn.parentNode.insertBefore( span, tn );
 							span.appendChild( tn );
 						} else {
-							const before = tnText.substring(
-								0,
-								localStart
-							);
+							const before = tnText.substring( 0, localStart );
 							const middle = tnText.substring(
 								localStart,
 								localEnd
 							);
 							const after = tnText.substring( localEnd );
 
-							const spanText =
-								document.createTextNode( middle );
+							const spanText = document.createTextNode( middle );
 							span.appendChild( spanText );
 
 							const parent = tn.parentNode;
@@ -1095,10 +1080,7 @@ class TTSPlayer {
 									tn.nextSibling
 								);
 							}
-							parent.insertBefore(
-								span,
-								tn.nextSibling || null
-							);
+							parent.insertBefore( span, tn.nextSibling || null );
 							if ( before ) {
 								tn.textContent = before;
 							} else {
@@ -1187,16 +1169,23 @@ class TTSPlayer {
 			this.stickyEnabled = false;
 			return;
 		}
+		// Move bar to body to escape WordPress constrained layout containers
+		if ( this.bar.parentElement !== document.body ) {
+			document.body.appendChild( this.bar );
+		}
 		// Cache bar DOM refs
 		this.barPlayBtn = this.bar.querySelector( '.tts-bar__play' );
 		this.barSkipBack = this.bar.querySelector( '.tts-bar__skip--back' );
-		this.barSkipForward = this.bar.querySelector( '.tts-bar__skip--forward' );
+		this.barSkipForward = this.bar.querySelector(
+			'.tts-bar__skip--forward'
+		);
 		this.barElapsed = this.bar.querySelector( '.tts-bar__elapsed' );
 		this.barTotal = this.bar.querySelector( '.tts-bar__total' );
-		this.barTimelineFill = this.bar.querySelector( '.tts-bar__timeline-fill' );
+		this.barTimelineFill = this.bar.querySelector(
+			'.tts-bar__timeline-fill'
+		);
 		this.barTimeline = this.bar.querySelector( '.tts-bar__timeline' );
 		this.barSpeedBtn = this.bar.querySelector( '.tts-bar__speed' );
-		this.barVoice = this.bar.querySelector( '.tts-bar__voice' );
 		this.barTitle = this.bar.querySelector( '.tts-bar__title' );
 		this.barClose = this.bar.querySelector( '.tts-bar__close' );
 
@@ -1208,20 +1197,30 @@ class TTSPlayer {
 
 		// Wire bar control events
 		if ( this.barPlayBtn ) {
-			this.barPlayBtn.addEventListener( 'click', () => this.togglePlay() );
+			this.barPlayBtn.addEventListener( 'click', () =>
+				this.togglePlay()
+			);
 		}
 		if ( this.barClose ) {
-			this.barClose.addEventListener( 'click', () => this.dismissStickyBar() );
+			this.barClose.addEventListener( 'click', () =>
+				this.dismissStickyBar()
+			);
 		}
 		if ( this.barSpeedBtn ) {
-			this.barSpeedBtn.addEventListener( 'click', () => this.cycleBarSpeed() );
+			this.barSpeedBtn.addEventListener( 'click', () =>
+				this.cycleBarSpeed()
+			);
 		}
 		// Skip buttons: 15-second jumps (D-07)
 		if ( this.barSkipBack ) {
-			this.barSkipBack.addEventListener( 'click', () => this.skipByTime( -15 ) );
+			this.barSkipBack.addEventListener( 'click', () =>
+				this.skipByTime( -15 )
+			);
 		}
 		if ( this.barSkipForward ) {
-			this.barSkipForward.addEventListener( 'click', () => this.skipByTime( 15 ) );
+			this.barSkipForward.addEventListener( 'click', () =>
+				this.skipByTime( 15 )
+			);
 		}
 
 		// Timeline click-to-seek and drag-to-scrub (D-06)
@@ -1249,18 +1248,25 @@ class TTSPlayer {
 			} );
 
 			this.barTimeline.addEventListener( 'pointermove', ( e ) => {
-				if ( ! isDragging ) return;
+				if ( ! isDragging ) {
+					return;
+				}
 				const percent = getPercentFromEvent( e );
 				this.updateBarTimelineFill( percent );
 				// Update elapsed time preview during drag
 				if ( this.barElapsed && this.totalDurationSecs > 0 ) {
-					const previewTime = ( this.totalDurationSecs * percent ) / ( 100 * this.speed );
-					this.barElapsed.textContent = formatTimestamp( previewTime );
+					const previewTime =
+						( this.totalDurationSecs * percent ) /
+						( 100 * this.speed );
+					this.barElapsed.textContent =
+						formatTimestamp( previewTime );
 				}
 			} );
 
 			this.barTimeline.addEventListener( 'pointerup', ( e ) => {
-				if ( ! isDragging ) return;
+				if ( ! isDragging ) {
+					return;
+				}
 				isDragging = false;
 				this.barTimeline.releasePointerCapture( e.pointerId );
 				const percent = getPercentFromEvent( e );
@@ -1271,11 +1277,17 @@ class TTSPlayer {
 			this.barTimeline.addEventListener( 'keydown', ( e ) => {
 				if ( e.key === 'ArrowRight' ) {
 					e.preventDefault();
-					const current = parseFloat( this.barTimeline.getAttribute( 'aria-valuenow' ) ) || 0;
+					const current =
+						parseFloat(
+							this.barTimeline.getAttribute( 'aria-valuenow' )
+						) || 0;
 					this.seekToPercent( current + 5 );
 				} else if ( e.key === 'ArrowLeft' ) {
 					e.preventDefault();
-					const current = parseFloat( this.barTimeline.getAttribute( 'aria-valuenow' ) ) || 0;
+					const current =
+						parseFloat(
+							this.barTimeline.getAttribute( 'aria-valuenow' )
+						) || 0;
 					this.seekToPercent( current - 5 );
 				}
 			} );
@@ -1294,11 +1306,15 @@ class TTSPlayer {
 	 * Shows the bar, collapses inline block, updates bar info.
 	 */
 	activateStickyBar() {
-		if ( ! this.stickyEnabled ) return;
+		if ( ! this.stickyEnabled ) {
+			return;
+		}
 		if ( ! this.bar ) {
 			this.initStickyBar();
 		}
-		if ( ! this.bar ) return;
+		if ( ! this.bar ) {
+			return;
+		}
 
 		this.stickyMode = true;
 
@@ -1325,7 +1341,9 @@ class TTSPlayer {
 		this._inlineClickHandler = () => {
 			if ( this.bar ) {
 				this.bar.scrollIntoView( { behavior: 'smooth', block: 'end' } );
-				if ( this.barPlayBtn ) this.barPlayBtn.focus();
+				if ( this.barPlayBtn ) {
+					this.barPlayBtn.focus();
+				}
 			}
 		};
 		this.container.addEventListener( 'click', this._inlineClickHandler );
@@ -1333,9 +1351,6 @@ class TTSPlayer {
 		// Update bar info
 		this.updateBarState();
 		this.updateBarTimestamps();
-		if ( this.barVoice && this.resolvedVoice ) {
-			this.barVoice.textContent = this.resolvedVoice.name;
-		}
 		this.updateBarSpeed();
 
 		// Screen reader announcement
@@ -1348,7 +1363,9 @@ class TTSPlayer {
 	 * bar out, restores inline block to idle state.
 	 */
 	dismissStickyBar() {
-		if ( ! this.stickyMode || ! this.bar ) return;
+		if ( ! this.stickyMode || ! this.bar ) {
+			return;
+		}
 
 		// Stop playback
 		speechSynthesis.cancel();
@@ -1372,7 +1389,10 @@ class TTSPlayer {
 		}
 		this.container.style.cursor = '';
 		if ( this._inlineClickHandler ) {
-			this.container.removeEventListener( 'click', this._inlineClickHandler );
+			this.container.removeEventListener(
+				'click',
+				this._inlineClickHandler
+			);
 			this._inlineClickHandler = null;
 		}
 
@@ -1394,7 +1414,9 @@ class TTSPlayer {
 	 * Sync bar play/pause icon state with player state.
 	 */
 	updateBarState() {
-		if ( ! this.stickyMode || ! this.bar ) return;
+		if ( ! this.stickyMode || ! this.bar ) {
+			return;
+		}
 		this.bar.dataset.ttsBarState = this.state;
 	}
 
@@ -1402,19 +1424,28 @@ class TTSPlayer {
 	 * Update elapsed and total timestamps in the bar.
 	 */
 	updateBarTimestamps() {
-		if ( ! this.stickyMode || ! this.barElapsed || ! this.barTotal ) return;
+		if ( ! this.stickyMode || ! this.barElapsed || ! this.barTotal ) {
+			return;
+		}
 		const elapsed = this.chunkTimes[ this.currentChunkIndex ] || 0;
 		this.barElapsed.textContent = formatTimestamp( elapsed / this.speed );
-		this.barTotal.textContent = formatTimestamp( this.totalDurationSecs / this.speed );
+		this.barTotal.textContent = formatTimestamp(
+			this.totalDurationSecs / this.speed
+		);
 	}
 
 	/**
 	 * Update speed display in the bar.
 	 */
 	updateBarSpeed() {
-		if ( ! this.stickyMode || ! this.barSpeedBtn ) return;
+		if ( ! this.stickyMode || ! this.barSpeedBtn ) {
+			return;
+		}
 		this.barSpeedBtn.textContent = formatSpeed( this.speed );
-		this.barSpeedBtn.setAttribute( 'aria-label', 'Afspeelsnelheid: ' + formatSpeed( this.speed ) );
+		this.barSpeedBtn.setAttribute(
+			'aria-label',
+			'Afspeelsnelheid: ' + formatSpeed( this.speed )
+		);
 	}
 
 	/**
@@ -1424,11 +1455,15 @@ class TTSPlayer {
 	 */
 	updateBarTimelineFill( percent ) {
 		if ( this.barTimelineFill ) {
-			this.barTimelineFill.style.width = Math.max( 0, Math.min( 100, percent ) ) + '%';
+			this.barTimelineFill.style.width =
+				Math.max( 0, Math.min( 100, percent ) ) + '%';
 		}
 		// Update slider aria-valuenow
 		if ( this.barTimeline ) {
-			this.barTimeline.setAttribute( 'aria-valuenow', Math.round( percent ) );
+			this.barTimeline.setAttribute(
+				'aria-valuenow',
+				Math.round( percent )
+			);
 		}
 	}
 
@@ -1439,7 +1474,9 @@ class TTSPlayer {
 	 * @param {number} percent - 0 to 100
 	 */
 	seekToPercent( percent ) {
-		if ( ! this.chunks || this.chunks.length === 0 ) return;
+		if ( ! this.chunks || this.chunks.length === 0 ) {
+			return;
+		}
 
 		const clampedPercent = Math.max( 0, Math.min( 100, percent ) );
 		const targetTime = ( this.totalDurationSecs * clampedPercent ) / 100;
@@ -1473,10 +1510,13 @@ class TTSPlayer {
 	 * @param {number} deltaSecs - Positive for forward, negative for backward
 	 */
 	skipByTime( deltaSecs ) {
-		if ( ! this.chunks || this.chunks.length === 0 ) return;
+		if ( ! this.chunks || this.chunks.length === 0 ) {
+			return;
+		}
 
 		// Current elapsed time at current speed
-		const currentTimeAtSpeed = ( this.chunkTimes[ this.currentChunkIndex ] || 0 ) / this.speed;
+		const currentTimeAtSpeed =
+			( this.chunkTimes[ this.currentChunkIndex ] || 0 ) / this.speed;
 		const targetTimeAtSpeed = Math.max( 0, currentTimeAtSpeed + deltaSecs );
 		// Convert back to 1x-speed time for chunk lookup
 		const targetTimeRaw = targetTimeAtSpeed * this.speed;
@@ -1491,7 +1531,10 @@ class TTSPlayer {
 		}
 
 		// Clamp to valid range
-		targetChunk = Math.max( 0, Math.min( targetChunk, this.chunks.length - 1 ) );
+		targetChunk = Math.max(
+			0,
+			Math.min( targetChunk, this.chunks.length - 1 )
+		);
 
 		speechSynthesis.cancel();
 		this.currentChunkIndex = targetChunk;
@@ -1499,9 +1542,11 @@ class TTSPlayer {
 		this.updateBarTimestamps();
 
 		// Update timeline fill
-		const percent = this.totalDurationSecs > 0
-			? ( this.chunkTimes[ targetChunk ] / this.totalDurationSecs ) * 100
-			: 0;
+		const percent =
+			this.totalDurationSecs > 0
+				? ( this.chunkTimes[ targetChunk ] / this.totalDurationSecs ) *
+				  100
+				: 0;
 		this.updateBarTimelineFill( percent );
 
 		if ( this.state === STATES.PLAYING ) {
@@ -1520,35 +1565,54 @@ class TTSPlayer {
 		if ( this.progressRAF ) {
 			cancelAnimationFrame( this.progressRAF );
 		}
-		if ( ! this.stickyMode || ! this.barTimelineFill ) return;
+		if ( ! this.stickyMode || ! this.barTimelineFill ) {
+			return;
+		}
 
-		const startPercent = this.totalDurationSecs > 0
-			? ( this.chunkTimes[ this.currentChunkIndex ] / this.totalDurationSecs ) * 100
-			: 0;
-		const endChunkIdx = Math.min( this.currentChunkIndex + 1, this.chunks.length );
-		const endPercent = endChunkIdx < this.chunks.length
-			? ( this.chunkTimes[ endChunkIdx ] / this.totalDurationSecs ) * 100
-			: 100;
+		const startPercent =
+			this.totalDurationSecs > 0
+				? ( this.chunkTimes[ this.currentChunkIndex ] /
+						this.totalDurationSecs ) *
+				  100
+				: 0;
+		const endChunkIdx = Math.min(
+			this.currentChunkIndex + 1,
+			this.chunks.length
+		);
+		const endPercent =
+			endChunkIdx < this.chunks.length
+				? ( this.chunkTimes[ endChunkIdx ] / this.totalDurationSecs ) *
+				  100
+				: 100;
 
 		const chunkText = this.chunks[ this.currentChunkIndex ];
-		const chunkWords = chunkText.split( /\s+/ ).filter( ( w ) => w.length > 0 ).length;
-		const chunkDurationMs = ( chunkWords / WORDS_PER_MINUTE ) * 60000 / this.speed;
+		const chunkWords = chunkText
+			.split( /\s+/ )
+			.filter( ( w ) => w.length > 0 ).length;
+		const chunkDurationMs =
+			( ( chunkWords / WORDS_PER_MINUTE ) * 60000 ) / this.speed;
 		const startTime = performance.now();
-		const chunkStartTimeSecs = ( this.chunkTimes[ this.currentChunkIndex ] || 0 ) / this.speed;
+		const chunkStartTimeSecs =
+			( this.chunkTimes[ this.currentChunkIndex ] || 0 ) / this.speed;
 
 		const animate = ( now ) => {
 			const elapsed = now - startTime;
 			const t = Math.min( elapsed / chunkDurationMs, 1 );
-			const currentPercent = startPercent + ( endPercent - startPercent ) * t;
+			const currentPercent =
+				startPercent + ( endPercent - startPercent ) * t;
 
 			this.barTimelineFill.style.width = currentPercent + '%';
 			if ( this.barTimeline ) {
-				this.barTimeline.setAttribute( 'aria-valuenow', Math.round( currentPercent ) );
+				this.barTimeline.setAttribute(
+					'aria-valuenow',
+					Math.round( currentPercent )
+				);
 			}
 
 			// Update elapsed timestamp smoothly
 			if ( this.barElapsed ) {
-				const elapsedSecs = chunkStartTimeSecs + ( t * chunkDurationMs / 1000 );
+				const elapsedSecs =
+					chunkStartTimeSecs + ( t * chunkDurationMs ) / 1000;
 				this.barElapsed.textContent = formatTimestamp( elapsedSecs );
 			}
 
@@ -1571,7 +1635,10 @@ class TTSPlayer {
 
 		// Update inline speed button too
 		this.speedBtn.textContent = formatSpeed( this.speed );
-		this.speedBtn.setAttribute( 'aria-label', 'Afspeelsnelheid: ' + formatSpeed( this.speed ) );
+		this.speedBtn.setAttribute(
+			'aria-label',
+			'Afspeelsnelheid: ' + formatSpeed( this.speed )
+		);
 
 		// Update active state in inline menu
 		if ( this.speedMenu ) {
@@ -2002,12 +2069,17 @@ class TTSPlayer {
 	 * Save current chunk index to localStorage. Per D-07: on pause and beforeunload.
 	 */
 	savePosition() {
-		if ( ! this.chunks.length || this.currentChunkIndex <= 0 ) return;
+		if ( ! this.chunks.length || this.currentChunkIndex <= 0 ) {
+			return;
+		}
 		const key = `tts-position-${ window.location.pathname }`;
-		safeSetItem( key, JSON.stringify( {
-			chunkIndex: this.currentChunkIndex,
-			timestamp: Date.now(),
-		} ) );
+		safeSetItem(
+			key,
+			JSON.stringify( {
+				chunkIndex: this.currentChunkIndex,
+				timestamp: Date.now(),
+			} )
+		);
 	}
 
 	/**
@@ -2020,45 +2092,64 @@ class TTSPlayer {
 
 	/**
 	 * Show resume prompt within the player. Per D-08: user chooses to resume or start fresh.
+	 * @param {number} chunkIndex - The chunk index to resume from
 	 */
 	showResumePrompt( chunkIndex ) {
 		const resumeEl = this.container.querySelector( '.tts-resume' );
-		if ( ! resumeEl ) return;
+		if ( ! resumeEl ) {
+			return;
+		}
 
 		const textEl = resumeEl.querySelector( '.tts-resume__text' );
 		if ( textEl ) {
 			const langPrefix = this.lang.startsWith( 'nl' ) ? 'nl' : 'en';
-			textEl.textContent = langPrefix === 'nl'
-				? `Verder luisteren vanaf zin ${ chunkIndex + 1 }?`
-				: `Continue from sentence ${ chunkIndex + 1 }?`;
+			textEl.textContent =
+				langPrefix === 'nl'
+					? `Verder luisteren vanaf zin ${ chunkIndex + 1 }?`
+					: `Continue from sentence ${ chunkIndex + 1 }?`;
 		}
 
 		resumeEl.style.display = '';
 
-		const continueBtn = resumeEl.querySelector( '.tts-resume__action--continue' );
-		const restartBtn = resumeEl.querySelector( '.tts-resume__action--restart' );
+		const continueBtn = resumeEl.querySelector(
+			'.tts-resume__action--continue'
+		);
+		const restartBtn = resumeEl.querySelector(
+			'.tts-resume__action--restart'
+		);
 
 		if ( continueBtn ) {
-			continueBtn.addEventListener( 'click', () => {
-				resumeEl.style.display = 'none';
-				this.resumeFromSavedPosition( chunkIndex );
-			}, { once: true } );
+			continueBtn.addEventListener(
+				'click',
+				() => {
+					resumeEl.style.display = 'none';
+					this.resumeFromSavedPosition( chunkIndex );
+				},
+				{ once: true }
+			);
 		}
 
 		if ( restartBtn ) {
-			restartBtn.addEventListener( 'click', () => {
-				resumeEl.style.display = 'none';
-				this.clearPosition();
-			}, { once: true } );
+			restartBtn.addEventListener(
+				'click',
+				() => {
+					resumeEl.style.display = 'none';
+					this.clearPosition();
+				},
+				{ once: true }
+			);
 		}
 	}
 
 	/**
 	 * Start playback from a saved chunk index. Uses the same flow as startPlayback
 	 * but sets currentChunkIndex before playing.
+	 * @param {number} chunkIndex - The chunk index to resume from
 	 */
 	async resumeFromSavedPosition( chunkIndex ) {
-		if ( ! this.text ) return;
+		if ( ! this.text ) {
+			return;
+		}
 
 		// Claim user gesture
 		const unlock = new SpeechSynthesisUtterance( '' );
@@ -2069,7 +2160,9 @@ class TTSPlayer {
 		if ( ! this.capabilitiesChecked ) {
 			this.capabilitiesChecked = true;
 			const capable = await this.checkCapabilities();
-			if ( ! capable ) return;
+			if ( ! capable ) {
+				return;
+			}
 		}
 
 		this.setState( STATES.LOADING );
@@ -2091,7 +2184,10 @@ class TTSPlayer {
 			} else {
 				const voice = await resolveVoice( this.lang );
 				if ( voice === null ) {
-					this.showError( this.errorMessages[ 'no-voice' ] || 'No voice available for this language.' );
+					this.showError(
+						this.errorMessages[ 'no-voice' ] ||
+							'No voice available for this language.'
+					);
 					return;
 				}
 				this.resolvedVoice = voice;
